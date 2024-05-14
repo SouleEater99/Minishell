@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   ft_lstnew_bonus.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-maim <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/14 17:39:35 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/05/14 17:39:38 by ael-maim         ###   ########.fr       */
+/*   Created: 2023/11/11 12:05:07 by ael-maim          #+#    #+#             */
+/*   Updated: 2023/11/11 15:39:45 by ael-maim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./minishell.h"
+#include "libft.h"
 
-int main(int ac, char **av, char **envp)
+t_list	*ft_lstnew(void *content)
 {
-    char *line;
+	t_list	*node;
 
-    line = readline(NULL);
-    while (line)
-    {
-        printf("line = %s\n", line);
-        free(line);
-        line = readline(NULL);
-    }
-    free(line);
+	node = (t_list *)malloc(sizeof(t_list));
+	if (!node)
+		return (NULL);
+	node->content = content;
+	node->next = NULL;
+	return (node);
 }

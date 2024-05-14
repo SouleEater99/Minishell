@@ -1,27 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   ft_striteri.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-maim <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/14 17:39:35 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/05/14 17:39:38 by ael-maim         ###   ########.fr       */
+/*   Created: 2023/11/11 16:40:39 by ael-maim          #+#    #+#             */
+/*   Updated: 2023/11/13 09:21:47 by ael-maim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./minishell.h"
+#include "libft.h"
 
-int main(int ac, char **av, char **envp)
+void	ft_striteri(char *s, void (*f)(unsigned int, char *))
 {
-    char *line;
+	unsigned int	i;
 
-    line = readline(NULL);
-    while (line)
-    {
-        printf("line = %s\n", line);
-        free(line);
-        line = readline(NULL);
-    }
-    free(line);
+	i = 0;
+	if (s && f)
+	{
+		while (s[i])
+		{
+			f(i, &s[i]);
+			i++;
+		}
+	}
 }

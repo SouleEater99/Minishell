@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   ft_lstiter_bonus.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-maim <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/14 17:39:35 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/05/14 17:39:38 by ael-maim         ###   ########.fr       */
+/*   Created: 2023/11/11 15:30:25 by ael-maim          #+#    #+#             */
+/*   Updated: 2023/11/11 15:30:31 by ael-maim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./minishell.h"
+#include "libft.h"
 
-int main(int ac, char **av, char **envp)
+void	ft_lstiter(t_list *lst, void (*f)(void *))
 {
-    char *line;
+	t_list	*ptr;
 
-    line = readline(NULL);
-    while (line)
-    {
-        printf("line = %s\n", line);
-        free(line);
-        line = readline(NULL);
-    }
-    free(line);
+	ptr = lst;
+	while (ptr)
+	{
+		f(ptr->content);
+		ptr = ptr->next;
+	}
 }

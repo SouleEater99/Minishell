@@ -1,27 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-maim <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/14 17:39:35 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/05/14 17:39:38 by ael-maim         ###   ########.fr       */
+/*   Created: 2023/11/11 11:34:31 by ael-maim          #+#    #+#             */
+/*   Updated: 2023/11/12 06:59:00 by ael-maim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./minishell.h"
+#include "libft.h"
 
-int main(int ac, char **av, char **envp)
+void	ft_bzero(void *b, size_t n)
 {
-    char *line;
+	size_t			i;
+	unsigned char	*a;
 
-    line = readline(NULL);
-    while (line)
-    {
-        printf("line = %s\n", line);
-        free(line);
-        line = readline(NULL);
-    }
-    free(line);
+	i = 0;
+	a = (unsigned char *)b;
+	while (i < n)
+		a[i++] = 0;
 }

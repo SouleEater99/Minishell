@@ -1,27 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   ft_strchr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-maim <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/14 17:39:35 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/05/14 17:39:38 by ael-maim         ###   ########.fr       */
+/*   Created: 2023/11/11 16:38:25 by ael-maim          #+#    #+#             */
+/*   Updated: 2023/11/19 09:23:42 by ael-maim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./minishell.h"
+#include "libft.h"
 
-int main(int ac, char **av, char **envp)
+char	*ft_strchr(const char *str, int c)
 {
-    char *line;
+	unsigned char	uc;
 
-    line = readline(NULL);
-    while (line)
-    {
-        printf("line = %s\n", line);
-        free(line);
-        line = readline(NULL);
-    }
-    free(line);
+	uc = c;
+	while (*str)
+	{
+		if (*str == uc)
+			return ((char *)str);
+		str++;
+	}
+	if (*str == uc)
+		return ((char *)str);
+	return (NULL);
 }
