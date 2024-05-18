@@ -16,12 +16,12 @@ int main(int ac, char **av, char **envp)
 {
     char *line;
 
-    line = readline(NULL);
+    line = readline("HERE THE PROMPOT : ");
     while (line)
     {
         printf("line = %s\n", line);
         free(line);
-        line = readline(NULL);
+        line = readline("HERE THE PROMPOT : ");
     }
     free(line);
 }
