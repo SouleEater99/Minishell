@@ -12,7 +12,7 @@
 # include <sys/wait.h>
 # include <time.h>
 # include <unistd.h>
-//# include <readline/readline.h>
+# include <readline/readline.h>
 # include "../get_next_line/get_next_line.h"
 # include    "../lib_ft/libft.h"
 
@@ -45,6 +45,7 @@ typedef struct s_mini
     char    *line;
     char    *next_line;
     char    *result;
+    char    *cwd;
     int     i;
     int     parenthesis_flag;
     int     qoutes_flag;
