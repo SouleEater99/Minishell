@@ -12,182 +12,328 @@
 
 #include "../include/minishell.h"
 
-t_mini *data;
+t_mini *data = NULL;
 
-// int ft_strlen_protected(char *str)
-// {
-//     int i;
-
-//     i = 0;
-//     if (!str)
-//         return (i);
-//     while (str[i])
-//         i++;
-//     return (i);
-// }
-
-// char *ft_strjoin_paranthesis(char *s1, char *s2)
-// {
-//     char *new;
-//     int i;
-//     int j;
-
-//     i = 0;
-//     j = 0;
-//     new = malloc(ft_strlen_protected(s1) + ft_strlen_protected(s2) + 2);
-//     if (!new)
-//         return (free(s1), free(s2), NULL);
-//     while (s1 && s1[i] && s1[i])
-//     {
-//         new[i] = s1[i];
-//         i++;
-//     }
-//     if (s1[i] == '\n')
-//     {
-//         new[i++] = ';';
-//         new[i++] = '\n';
-//     }
-//     while (s2 && s2[j])
-//         new[i++] = s2[j++];
-//     new[i] = '\0';
-//     return (free(s1), free(s2), new);
-// }
-
-void ft_free_node(t_node *root)
+int ft_strcmp(char *s1, char *s2)
 {
-    free(root);
+    if (!s1 || !s2)
+        return (-1);
+    while (*s1 && *s2)
+    {
+        if (*s1 != *s2)
+            return (*s1 - *s2);
+        s1++;
+        s2++;
+    }
+    return (*s1 - *s2);
 }
 
-void ft_free_all(char *error, int status)
+int ft_echo(char **arg)
 {
-    if (data)
+    int nl_flag;
+    int i;
+    int number_of_arg;
+    
+    number_of_arg = 0;
+    i = 0;
+    nl_flag = 0;
+    if (!arg)
+        return(printf("\n"), 0);
+    while (arg[number_of_arg])
+        number_of_arg++;
+    if (ft_strcmp("-n", arg[0]) == 0)
+        nl_flag = 1;
+    if (number_of_arg == 1 && nl_flag == 1)
+        return(0);
+    if (nl_flag == 1)
+        i = 1;
+    while (arg[i])
     {
-        if (data->line)
-            free(data->line);
-        if (data->result)
-            free(data->result);
-        if (data->cwd)
-            free(data->cwd);
-        if (data->next_line)
-            free(data->next_line);
-        if (data->root)
-            ft_free_node(data->root);
+        printf("%s",arg[i]);
+        if (i++ < number_of_arg - 1)
+            printf(" ");
     }
-    ft_putstr_fd(error, 2);
-    exit(status);
+    if (nl_flag == 0)
+        printf("\n");
+    return (0);
 }
 
-void ft_handle_qoutes_end(char qoute)
+
+int ft_pwd()
 {
-    char *backup;
-    if (data->line[data->i] == qoute && data->qoutes_flag == 0)
+    char *pwd;
+
+    pwd = getcwd(NULL, 0);
+    if (!pwd)
+        return (ft_putstr_fd("error in allocation of pwd\n", 2), 1);
+    printf("%s\n",pwd);
+    free(pwd);
+    return (0);
+}
+
+void    ft_exit()
+{
+    ft_free_all(NULL, 0);
+}
+
+int ft_cd(char **arg)
+{
+    int n_arg;
+
+    n_arg = 0;
+    while (arg[n_arg])
+        n_arg++;
+    if (n_arg > 1)
+        return (ft_putstr_fd("bash: cd: too many arguments\n", 2), 1);
+    if (chdir(arg[0]) == -1)
+        return (ft_putstr_fd("No such file or directory\n", 2), 1);
+    // i need to handle cd - on OLDPWD in env;
+    // and cd  which let you go to home;
+    return (0);
+}
+
+t_env   *ft_lst_create_env_node(char *str)
+{
+    t_env *new;
+
+    new = malloc(sizeof(t_env));
+    if (!new)
+        ft_free_all("Error in allocation of new_node in new_env\n", 1);
+    new->value = ft_strdup(str);
+    if (!new->value)
     {
-        data->qoutes_flag++;
-        data->i++;
+        free(new);
+        ft_free_all("Error in allocation in new_value\n", 1);
     }
-    while (data->line[data->i])
+    new->next = NULL;
+    return (new);
+}
+
+void        ft_lst_add_back_env_node(t_env *next)
+{
+    t_env *head;
+
+    if (next)
     {
-        if (data->line[data->i] == qoute && data->qoutes_flag > 0)
+        head = data->new_env;
+        while (head->next)
+            head = head->next;
+        head->next = next;
+    }
+}
+
+void    ft_create_new_env() 
+{
+    int i;
+    t_env   *next;
+
+    i = 0;
+    data->new_env = ft_lst_create_env_node(data->old_env[i++]);
+    while (data->old_env[i])
+    {
+        next = ft_lst_create_env_node(data->old_env[i++]);
+        ft_lst_add_back_env_node(next);
+    }
+}
+
+int ft_env()
+{
+    t_env *env;
+
+    env = data->new_env;
+    while (env)
+    {
+        printf("%s\n",env->value);
+        env = env->next;
+    }
+    return (0);
+}
+
+int ft_check_env_var(char *env, char *var)
+{
+    int i;
+
+    i = 0;
+    while (env[i] && var[i])
+    {
+        if (env[i] != var[i])
+            break;
+        i++;
+    }
+    if (!var[i] && env[i] == '=')
+        return (0);
+    return (-1);
+}
+
+void    ft_lst_del_env_node(t_env *to_del)
+{
+    t_env   *head;
+    t_env   *next;
+
+    head = data->new_env;
+    next = to_del->next;
+    while (head->next && head->next != to_del)
+        head = head->next;
+    free(to_del->value);
+    free(to_del);
+    head->next = next;
+}
+
+int ft_unset(char *var)
+{
+    t_env   *head;
+    t_env   *tmp;
+
+    if (!var || *var == '\0')
+        ft_free_all("unset: : invalid parameter\n", 1);
+    head = data->new_env;
+    while (head)
+    {
+        tmp = head->next;
+        if (ft_check_env_var(head->value, var) == 0)
+            ft_lst_del_env_node(head);
+        head = tmp;
+    }
+    return (0);    
+}
+
+void    ft_lst_free_env()
+{
+    t_env *head;
+    t_env *tmp;
+
+    head = data->new_env;
+    while (head)
+    {
+        tmp = head->next;
+        free(head->value);
+        free(head);
+        head = tmp; 
+    }
+}
+
+int     ft_check_export_arg(char *str)
+{
+    int     i;
+
+    i = 0;
+    if (!str[i] ||str[i] == '='|| !((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z')))
+        if (str[i] != '_')
+            return (0);
+    while (str[i])
+    {
+        if (str[i] == ' ' || str[i] == '\t')
+            return (0);
+        if (str[i++] == '=')
+            return (1);
+    }
+    return (-1);
+}
+
+char    *ft_get_identifier(char *var)
+{
+    int     i;
+    char    *new;
+
+    i = 0;
+    while (var[i] && var[i] != '=')
+        i++;
+    new = malloc(i + 1);
+    if (!new)
+        ft_free_all("Error in allocation of identifier of export\n", 1);
+    i = 0;
+    while (var[i] && var[i] != '=')
+    {
+        new[i] = var[i];
+        i++;
+    }
+    new[i] = '\0';
+    return (new);
+}
+
+void    ft_add_or_update(char *var)
+{
+    t_env *head;
+    char *identifier;
+
+    identifier = ft_get_identifier(var);
+    head = data->new_env;
+    while (head)
+    {
+        if (ft_check_env_var(head->value, identifier) == 0)
         {
-            data->qoutes_flag--;
-            return;
+            free(head->value);
+            free(identifier);
+            head->value = ft_strdup(var);
+            if (!head->value)
+                ft_free_all("error in allocation export\n", 1);
+            return ;
         }
-        data->i++;
+        head = head->next;
     }
-    ft_putstr_fd("> ",1);
-    data->next_line = readline(NULL);
-    if (!data->next_line)
-        ft_free_all("Error in readline of qoutes\n", 1);
-    backup = ft_strjoin(data->line, data->next_line);
-    if (!backup)
-        ft_free_all("Error in strjoin on qoutes\n", 1);
-    free(data->line);
-    free(data->next_line);
-    data->next_line = NULL;
-    data->line = backup;
-    ft_handle_qoutes_end(qoute);
+    free(identifier);
+    head = ft_lst_create_env_node(var);
+    ft_lst_add_back_env_node(head);
 }
 
-void ft_handle_parenthesis(char parenthesis)
+int     ft_export(char **arg)
 {
-    char *backup;
+    static unsigned int  i;
+    int         n;
 
-    while (data->line[data->i])
+    n = 0;
+    if (!arg)
     {
-        if (data->line[data->i] == parenthesis)
-            data->parenthesis_flag++;
-        if (data->line[data->i] == '\'' || data->line[data->i] == '\"')
-        {
-            ft_handle_qoutes_end(data->line[data->i]);
-        }
-        else if (data->line[data->i] == ')' && data->parenthesis_flag == 1)
-        {
-            data->parenthesis_flag--;
-            return;
-        }
-        else if (data->line[data->i] == ')')
-            data->parenthesis_flag--;
-        data->i++;
+        ft_env();
+        return (0);
     }
-    if (data->parenthesis_flag < 0)
-        ft_free_all("bash: syntax error near unexpected token ')' \n", 2);
-    else if (data->parenthesis_flag > 0)
+    while (arg[n])
+        n++;
+    if (arg[i])
     {
-        ft_putstr_fd("> ",1);
-        data->next_line = readline(NULL);
-        if (!data->next_line)
-            ft_free_all("error in allocation of data->next_line\n", 1);
-        backup = ft_strjoin(data->line, data->next_line);
-        if (!backup)
-            ft_free_all("error in strjoin backup\n", 1);
-        free(data->line);
-        free(data->next_line);
-        data->next_line = NULL;
-        data->line = backup;
-        ft_handle_parenthesis(parenthesis);
+        if (ft_check_export_arg(arg[i]) == 0)
+            ft_putstr_fd("export: has not a valid identifier\n", 2);
+        else if (ft_check_export_arg(arg[i]) == 1)
+            ft_add_or_update(arg[i]);
+        i++;
+        ft_export(arg);
     }
+    i = 0;
+    return (0);
 }
 
-void ft_check_line()
-{
 
-    data->i = -1;
-    while (data->line[++data->i])
-    {
-        if (data->line[data->i] == '\'' || data->line[data->i] == '\"')
-            ft_handle_qoutes_end(data->line[data->i]);
-        if (data->line[data->i] == '(')
-            ft_handle_parenthesis(data->line[data->i]);
-    }
-}
-
-void    ft_print_prompt()
+int main(int ac, char **av, char **envp)
 {
-    data->cwd = getcwd(NULL, 0);
-    if (!data->cwd)
-        ft_free_all("error in getcwd \n", 1);
-    ft_putstr_fd("┌──(username㉿host)-[", 1);
-    ft_putstr_fd(data->cwd, 1);
-    ft_putstr_fd("]\n└─$ ",1);
-}
-
-int main()
-{
+    (void) av;
+    (void) ac;
+    (void) envp;
     data = malloc(sizeof(t_mini));
     if (!data)
         exit(1);
     data = ft_memset(data, 0, sizeof(t_mini));
-    ft_print_prompt();
-    data->line = readline(NULL);
-    if (!data->line)
-        ft_free_all("Error in readline\n", 1);
-    while (data->line)
-    {
-        ft_check_line();
-        ft_print_prompt();
-        free(data->line);
-        data->line = get_next_line(0);
-        if (!data->line)
-            ft_free_all("Error in readline\n", 1);
-    }
+    data->old_env = envp;
+    ft_create_new_env();
+    // ft_print_prompt();
+    // data->line = readline(NULL);
+    // if (!data->line)
+    //     ft_free_all("Error in readline\n", 1);
+    // while (data->line)
+    // {
+    //     ft_print_prompt();
+    //     free(data->line);
+    //     data->line = get_next_line(0);
+    //     if (!data->line)
+    //         ft_free_all("Error in readline\n", 1);
+    // }
+    // char *arg[] = {"-n ", "helllo awda", "ali lai", NULL};
+    // ft_echo(arg);
+    // char *arg_cd[] = {"./../../..../../" ,NULL};
+    // ft_cd(arg_cd);
+    // ft_pwd();
+    char *arg[] = {"=", "dasd=", NULL};
+    ft_export(arg);
+    //ft_env();
+    ft_free_all(NULL, 0);
+    return (0);
 }

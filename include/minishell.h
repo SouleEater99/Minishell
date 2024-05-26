@@ -39,6 +39,11 @@ typedef struct s_node
     struct s_node  *right;
 }t_node;
 
+typedef struct s_env
+{
+    char    *value;
+    struct s_env *next;
+}t_env;
 
 typedef struct s_mini
 {
@@ -46,12 +51,23 @@ typedef struct s_mini
     char    *next_line;
     char    *result;
     char    *cwd;
+    char    **old_env;
     int     i;
     int     parenthesis_flag;
     int     qoutes_flag;
+    t_env   *new_env;
     t_node  *root;
-    
 } t_mini;
+
+extern t_mini *data;
+
+void ft_free_node(t_node *root);
+void ft_free_all(char *error, int status);
+void ft_handle_qoutes_end(char qoute);
+void ft_handle_parenthesis(char parenthesis);
+void ft_check_line();
+void    ft_print_prompt();
+void    ft_lst_free_env();
 
 
 
