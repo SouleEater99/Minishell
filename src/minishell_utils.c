@@ -41,9 +41,9 @@
 //     return (free(s1), free(s2), new);
 // }
 
-void ft_free_node(t_node *root)
+void ft_free_lst_cmd(t_command *cmds)
 {
-    free(root);
+    free(cmds);
 }
 
 void ft_free_all(char *error, int status)
@@ -60,8 +60,8 @@ void ft_free_all(char *error, int status)
             free(data->next_line);
         if (data->new_env)
             ft_lst_free_env();
-        if (data->root)
-            ft_free_node(data->root);
+        if (data->cmds)
+            ft_free_lst_cmd(data->cmds);
     }
     ft_putstr_fd(error, 2);
     exit(status);

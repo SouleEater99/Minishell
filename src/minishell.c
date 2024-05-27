@@ -33,23 +33,23 @@ int ft_echo(char **arg)
     int nl_flag;
     int i;
     int number_of_arg;
-    
+
     number_of_arg = 0;
     i = 0;
     nl_flag = 0;
     if (!arg)
-        return(printf("\n"), 0);
+        return (printf("\n"), 0);
     while (arg[number_of_arg])
         number_of_arg++;
     if (ft_strcmp("-n", arg[0]) == 0)
         nl_flag = 1;
     if (number_of_arg == 1 && nl_flag == 1)
-        return(0);
+        return (0);
     if (nl_flag == 1)
         i = 1;
     while (arg[i])
     {
-        printf("%s",arg[i]);
+        printf("%s", arg[i]);
         if (i++ < number_of_arg - 1)
             printf(" ");
     }
@@ -58,7 +58,6 @@ int ft_echo(char **arg)
     return (0);
 }
 
-
 int ft_pwd()
 {
     char *pwd;
@@ -66,12 +65,12 @@ int ft_pwd()
     pwd = getcwd(NULL, 0);
     if (!pwd)
         return (ft_putstr_fd("error in allocation of pwd\n", 2), 1);
-    printf("%s\n",pwd);
+    printf("%s\n", pwd);
     free(pwd);
     return (0);
 }
 
-void    ft_exit()
+void ft_exit()
 {
     ft_free_all(NULL, 0);
 }
@@ -92,7 +91,7 @@ int ft_cd(char **arg)
     return (0);
 }
 
-t_env   *ft_lst_create_env_node(char *str)
+t_env *ft_lst_create_env_node(char *str)
 {
     t_env *new;
 
@@ -109,7 +108,7 @@ t_env   *ft_lst_create_env_node(char *str)
     return (new);
 }
 
-void        ft_lst_add_back_env_node(t_env *next)
+void ft_lst_add_back_env_node(t_env *next)
 {
     t_env *head;
 
@@ -122,10 +121,10 @@ void        ft_lst_add_back_env_node(t_env *next)
     }
 }
 
-void    ft_create_new_env() 
+void ft_create_new_env()
 {
     int i;
-    t_env   *next;
+    t_env *next;
 
     i = 0;
     data->new_env = ft_lst_create_env_node(data->old_env[i++]);
@@ -143,7 +142,7 @@ int ft_env()
     env = data->new_env;
     while (env)
     {
-        printf("%s\n",env->value);
+        printf("%s\n", env->value);
         env = env->next;
     }
     return (0);
@@ -165,10 +164,10 @@ int ft_check_env_var(char *env, char *var)
     return (-1);
 }
 
-void    ft_lst_del_env_node(t_env *to_del)
+void ft_lst_del_env_node(t_env *to_del)
 {
-    t_env   *head;
-    t_env   *next;
+    t_env *head;
+    t_env *next;
 
     head = data->new_env;
     next = to_del->next;
@@ -181,8 +180,8 @@ void    ft_lst_del_env_node(t_env *to_del)
 
 int ft_unset(char *var)
 {
-    t_env   *head;
-    t_env   *tmp;
+    t_env *head;
+    t_env *tmp;
 
     if (!var || *var == '\0')
         ft_free_all("unset: : invalid parameter\n", 1);
@@ -194,10 +193,10 @@ int ft_unset(char *var)
             ft_lst_del_env_node(head);
         head = tmp;
     }
-    return (0);    
+    return (0);
 }
 
-void    ft_lst_free_env()
+void ft_lst_free_env()
 {
     t_env *head;
     t_env *tmp;
@@ -208,16 +207,16 @@ void    ft_lst_free_env()
         tmp = head->next;
         free(head->value);
         free(head);
-        head = tmp; 
+        head = tmp;
     }
 }
 
-int     ft_check_export_arg(char *str)
+int ft_check_export_arg(char *str)
 {
-    int     i;
+    int i;
 
     i = 0;
-    if (!str[i] ||str[i] == '='|| !((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z')))
+    if (!str[i] || str[i] == '=' || !((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z')))
         if (str[i] != '_')
             return (0);
     while (str[i])
@@ -230,10 +229,10 @@ int     ft_check_export_arg(char *str)
     return (-1);
 }
 
-char    *ft_get_identifier(char *var)
+char *ft_get_identifier(char *var)
 {
-    int     i;
-    char    *new;
+    int i;
+    char *new;
 
     i = 0;
     while (var[i] && var[i] != '=')
@@ -251,7 +250,7 @@ char    *ft_get_identifier(char *var)
     return (new);
 }
 
-void    ft_add_or_update(char *var)
+void ft_add_or_update(char *var)
 {
     t_env *head;
     char *identifier;
@@ -267,7 +266,7 @@ void    ft_add_or_update(char *var)
             head->value = ft_strdup(var);
             if (!head->value)
                 ft_free_all("error in allocation export\n", 1);
-            return ;
+            return;
         }
         head = head->next;
     }
@@ -276,10 +275,10 @@ void    ft_add_or_update(char *var)
     ft_lst_add_back_env_node(head);
 }
 
-int     ft_export(char **arg)
+int ft_export(char **arg)
 {
-    static unsigned int  i;
-    int         n;
+    static unsigned int i;
+    int n;
 
     n = 0;
     if (!arg)
@@ -302,18 +301,141 @@ int     ft_export(char **arg)
     return (0);
 }
 
+t_command *ft_create_cmd_node(char *cmd, char **arg, t_cmd_type type, int red, int append)
+{
+    t_command *head;
+
+    head = malloc(sizeof(t_command));
+    if (!head)
+        ft_free_all("error in create node allocation\n", 2);
+    head = memset(head, 0, sizeof(t_command));
+    head->next = NULL;
+    head->command = ft_strdup(cmd);
+    if (!head->command)
+        ft_free_all("error in create cmd _ strdup allocation\n", 2);
+    head->type = type;
+    head->redirection = red;
+    head->append = append;
+    head->in_fd = -1;
+    head->out_fd = -1;
+    head->args = arg;
+    return (head);
+}
+
+void ft_cmd_add_to_back(t_command *last)
+{
+    t_command *head;
+
+    head = data->cmds;
+    while (head->next)
+        head = head->next;
+    head->next = last;
+}
+
+void ft_assign_lst_cmd()
+{
+    t_command *next;
+    // char *arg1[] = {"/bin/ls","-l",NULL};
+    // char *arg2[] = {NULL};
+    // char *arg3[] = {NULL};
+    // char *arg4[] = {NULL};
+
+    data->cmds = ft_create_cmd_node("/bin/ls", NULL, SEMICOLON, 0, 0);
+    next = ft_create_cmd_node("/bin/pwd", NULL, PIPE, 0, 0);
+    ft_cmd_add_to_back(next);
+    next = ft_create_cmd_node("/bin/cat", NULL, PIPE, 0, 0);
+    ft_cmd_add_to_back(next);
+    next = ft_create_cmd_node("/bin/cat", NULL, SEMICOLON, 0, 0);
+    ft_cmd_add_to_back(next);
+}
+
+void ft_execute_command(t_command *cmd)
+{
+    cmd->pid = fork();
+    if (cmd->pid < 0)
+        ft_free_all("error in creating fork ()\n", 2);
+    if (cmd->pid == 0)
+    {
+        if (cmd->in_fd >= 0)
+        {
+            if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
+                ft_free_all("error in-fd\n", 2);
+            close(cmd->in_fd);
+            cmd->in_fd = -1;
+        }
+        if (cmd->out_fd >= 0)
+        {
+            if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
+                ft_free_all("error out-fd\n", 2);
+            close(cmd->out_fd);
+            cmd->out_fd = -1;
+        }
+        if (execve(cmd->command, cmd->args, NULL) == -1) // here i need to copy new_enp to dobule struct and use it here; some can change the path of the commande;
+            ft_free_all("error in execve in normal\n", 2);
+    }
+}
+
+void    ft_execute_pipe(t_command *cmd)
+{
+    if (pipe(data->pip) < 0)
+        ft_free_all("error in dup2 of pipe\n", 2);
+    cmd->pid = fork();
+    if (cmd->pid < 0)
+        ft_free_all("Error in fork_pip\n", 2);
+    if (cmd->pid == 0)
+    {
+        close(data->pip[0]);
+        if (dup2(data->pip[1], STDOUT_FILENO) < 0)
+            ft_free_all("error in dup2 of pipe\n", 2);
+        close(data->pip[1]);
+        if (execve(cmd->command, cmd->args, NULL) == -1) // here i need to copy new_enp to dobule struct and use it here; some can change the path of the commande;
+            ft_free_all("error in execve in pip\n", 2);
+    }
+    close(data->pip[1]);
+    if (dup2(data->pip[0], STDIN_FILENO) < 0)
+            ft_free_all("error in dup2 of pipe\n", 2);
+    close (data->pip[0]);
+}
+
+void ft_execute()
+{
+    t_command *head;
+
+    ft_assign_lst_cmd();
+    head = data->cmds;
+    printf("++++++++++++++++++++++\n");
+    while (head)
+    {
+        // if (head->type != PIPE)
+        //     if (dup2(data->save_stdin, STDIN_FILENO) == - 1)
+        //         ft_free_all("Error in dup2 of save_stding \n", 2);
+        if (head->type == SEMICOLON || head->type == COMMAND)
+            ft_execute_command(head);
+        else if (head->type == PIPE)
+            ft_execute_pipe(head);
+        if (head->type == SEMICOLON || head->type == COMMAND)
+            waitpid(head->pid, NULL, 0);
+        head = head->next;
+    }
+    while (wait(NULL) >= 0)
+    ;
+}
 
 int main(int ac, char **av, char **envp)
 {
-    (void) av;
-    (void) ac;
-    (void) envp;
+    (void)av;
+    (void)ac;
+    (void)envp;
     data = malloc(sizeof(t_mini));
     if (!data)
         exit(1);
     data = ft_memset(data, 0, sizeof(t_mini));
     data->old_env = envp;
     ft_create_new_env();
+    data->save_stdin = dup(0);
+    data->save_stdout = dup(1);
+    if (data->save_stdout == -1 || data->save_stdin == -1)
+        ft_free_all("error in dup save_std\n", 2);
     // ft_print_prompt();
     // data->line = readline(NULL);
     // if (!data->line)
@@ -331,9 +453,11 @@ int main(int ac, char **av, char **envp)
     // char *arg_cd[] = {"./../../..../../" ,NULL};
     // ft_cd(arg_cd);
     // ft_pwd();
-    char *arg[] = {"=", "dasd=", NULL};
-    ft_export(arg);
-    //ft_env();
+    // char *arg[] = {"=", "dasd=", NULL};
+    // ft_export(arg);
+    // ft_env();
+    ft_execute();
+    //sleep(10000);
     ft_free_all(NULL, 0);
     return (0);
 }

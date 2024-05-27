@@ -17,27 +17,33 @@
 # include    "../lib_ft/libft.h"
 
 
-typedef enum s_node_type
+typedef enum s_cmd_type
 {
+    OR,
+    AND,
     PIPE,
     COMMAND,
     SEMICOLON,
+    BACKGROUND,
     PARENTHESIS,
     CURLY_BRACKET,
-    AND,
-    OR,
-    BACKGROUND,
+}t_cmd_type;
 
-}t_node_type;
-
-typedef struct s_node
+typedef struct s_command
 {
-    t_node_type type;
-    char    *value;
-    struct s_node  *root;
-    struct s_node  *left;
-    struct s_node  *right;
-}t_node;
+    char                *command;
+    char                *path;
+    char                **args;
+    t_cmd_type          type;
+    int                 redirection;
+    int                 append;
+    int                 in_fd;
+    int                 out_fd;
+    pid_t               pid;
+    char                *here_doc;
+    char                *limiter;
+    struct s_command    *next; 
+}t_command;
 
 typedef struct s_env
 {
@@ -53,15 +59,18 @@ typedef struct s_mini
     char    *cwd;
     char    **old_env;
     int     i;
+    int     pip[2];
+    int     save_stdin;
+    int     save_stdout;
     int     parenthesis_flag;
     int     qoutes_flag;
     t_env   *new_env;
-    t_node  *root;
+    t_command    *cmds;
 } t_mini;
 
 extern t_mini *data;
 
-void ft_free_node(t_node *root);
+void ft_free_lst_cmd(t_command *cmds);
 void ft_free_all(char *error, int status);
 void ft_handle_qoutes_end(char qoute);
 void ft_handle_parenthesis(char parenthesis);
