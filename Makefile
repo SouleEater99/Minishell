@@ -1,4 +1,4 @@
-CC = gcc -Wall -Wextra -Werror -lreadline #  -fsanitize=address -g3
+CC = gcc -Wall -Wextra -Werror -lreadline # -fsanitize=address -g3
 NAME = minishell
 LIBFT = ./lib_ft/libft.a
 SRC	=	./src/minishell.c \

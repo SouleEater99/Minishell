@@ -7,6 +7,9 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "libft.h": "c"
+        "libft.h": "c",
+        "readline.h": "c",
+        "mini_shell.h": "c",
+        "history.h": "c"
     }
 }
