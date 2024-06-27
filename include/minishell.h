@@ -13,10 +13,7 @@
 # include <time.h>
 # include <unistd.h>
 # include <readline/readline.h>
-# include "../get_next_line/get_next_line.h"
-# include <readline/readline.h>
 # include <readline/history.h>
-# include    "../lib_ft/libft.h"
 # define EMPTY 0
 # define CMD 1
 # define ARG 2
@@ -95,10 +92,11 @@ typedef struct s_mini
 extern t_mini *data;
 
 /****************utils*********************/
-int	    ft_strcmp(const char *s1, char *s2);
+int     ft_strcmp(char *s1, char *s2);
 char	*ft_strchr(const char *s, int c);
 void	ft_putstr_fd(char *s, int fd);
 char	*ft_strdup(const char *str);
+void	*ft_memset(void *str, int c, size_t n);
 
 /****************free*********************/
 void ft_lst_free_env();
@@ -146,6 +144,7 @@ int ft_check_env_var(char *env, char *var);
 void ft_lst_del_env_node(t_env *to_del);
 
 /******************execute******************/
+void    ft_print_prompt();
 
 
 

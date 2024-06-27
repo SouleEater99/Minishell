@@ -1,20 +1,5 @@
 #include "../include/minishell.h"
 
-
-char	*ft_strchr(const char *s, int c)
-{
-	int	i;
-
-	i = 0;
-	while (s[i] != c)
-	{
-		if (s[i] == '\0')
-			return (NULL);
-		i++;
-	}
-	return ((char *)s + i);
-}
-
 void    get_tokens_type(t_token *token, int sep)
 {
     if((ft_strcmp(token->input, "")) == 0)
