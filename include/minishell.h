@@ -72,6 +72,18 @@ typedef struct s_env
     struct s_env *next;
 }t_env;
 
+typedef struct s_cmd
+{
+    char    *cmd;
+    char    *path;
+    char    *here_doc;
+    char    **arg;
+    int     infile;
+    int     outfile;
+    struct s_cmd *next;
+}t_cmd;
+
+
 typedef struct s_mini
 {
     char    *line;
@@ -87,6 +99,7 @@ typedef struct s_mini
     int     qoutes_flag;
     t_env   *new_env;
     t_tools *tools;
+    t_cmd   *cmd;
 } t_mini;
 
 extern t_mini *data;
