@@ -37,7 +37,9 @@ int ft_unset(char *var)
     t_env *tmp;
 
     if (!var || *var == '\0')
-        ft_free_all("unset: : invalid parameter\n", 1);
+    {
+        return ((data->exit = 0), 0);
+    }
     head = data->new_env;
     while (head)
     {
@@ -46,5 +48,5 @@ int ft_unset(char *var)
             ft_lst_del_env_node(head);
         head = tmp;
     }
-    return (0);
+    return ((data->exit = 0), 0);
 }

@@ -77,18 +77,21 @@ int ft_export(char **arg)
     if (!arg || n == 1)
     {
         ft_env();
-        return (0);
+        return ((data->exit = 0), 0);
     }
     if (arg[i])
     {
         if (ft_check_export_arg(arg[i]) == 0)
+        {
             ft_putstr_fd("export: has not a valid identifier\n", 2);
+            data->exit = 1;
+        }
         else if (ft_check_export_arg(arg[i]) == 1)
             ft_add_or_update(arg[i]);
         i++;
         ft_export(arg);
     }
     i = 0;
-    return (0);
+    return ((data->exit = 0), 0);
 }
 

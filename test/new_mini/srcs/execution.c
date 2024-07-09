@@ -395,7 +395,10 @@ void	ft_execute_builtin_parent(t_command *cmd)
 	else if (ft_strcmp(cmd->value, "exit") == 0)
 		ft_exit();
 	else if (ft_strcmp(cmd->value, "unset") == 0)
-		ft_unset(cmd->args[0]);
+	{
+		while (cmd->args[++i])
+			ft_unset(cmd->args[i]);
+	}
 	else if (ft_strcmp(cmd->value, "export") == 0)
 	{
 		while (cmd->args[i])
@@ -403,6 +406,32 @@ void	ft_execute_builtin_parent(t_command *cmd)
 		if (i >= 2)
 			ft_export(cmd->args);
 	}
+}
+
+char	**ft_get_exec_env()
+{
+	t_env *next;
+	int	i;
+
+	i = 0;
+	next = data->new_env;
+	while (next)
+	{
+		i++;
+		next = next->next;
+	}
+	data->exec_env = malloc(sizeof(char *) * (i + 1));
+	if (!data->exec_env)
+		ft_free_all("error in exec_env allocation", 2);
+	next = data->new_env;
+	i = 0;
+	while (next)
+	{
+		data->exec_env[i++] = next->value;
+		next = next->next;
+	}
+	data->exec_env[i] = NULL;
+	return (data->exec_env);
 }
 
 void	ft_execute_cmd(t_command *cmd)
@@ -424,8 +453,11 @@ void	ft_execute_cmd(t_command *cmd)
 		ft_free_all(NULL, 127);
 	}
 	ft_check_path(data->path);
-	if (cmd && cmd->type == TOKEN )
-		execve(data->path, cmd->args, data->old_env);
+	if (cmd && cmd->type == TOKEN)
+	{
+		data->exec_env = ft_get_exec_env();
+		execve(data->path, cmd->args, data->exec_env);
+	}
 	ft_free_all("error in execve() in child\n", 1);
 }
 
@@ -447,7 +479,11 @@ void	ft_execution()
 			ft_free_all("error in open pipe_line \n", 1); // i need to close all pipe of here-doc if they exist.
 		cmd_index = ft_return_cmd_index(cmd);
 		if (cmd_index && ft_check_is_builtin_parent(cmd_index) == 1)
+		{
+			if (ft_return_next_cmd(cmd) == NULL)
+				data->pid = -1;
 			ft_execute_builtin_parent(cmd_index);
+		}
 		else
 		{
 			data->pid = fork();
@@ -466,18 +502,22 @@ void	ft_execution()
 	ft_close_free_heredoc_pipes();
 	if (dup2(data->save_stdin, STDIN_FILENO) == -1)
 		ft_free_all("error in dup2 of save stdin\n", 1);
-	waitpid(data->pid, &data->exit, 0);
+	if (data->pid != -1)
+	{
+		waitpid(data->pid, &data->exit, 0);
+		data->exit = WEXITSTATUS(data->exit);
+	}
 	while (wait(NULL) != -1)
 		;
 	//sleep(1000);
 }
 
 
-
-//  what i need to handel : ft_exit with SHELVL minishell inside minishell
-//  env if it's NULL
-//  export sort with declar-x var=value
-//  pwd and oldpwd and shlvl always need to update.
+//	i need handle new_env to send to execev: ----> DONE 
+//  what i need to handel : ft_exit with SHELVL minishell inside minishell ---> DONE it's handled by default
+//  env if it's NULL ---> DONE
+//  pwd and oldpwd and shlvl always need to update. ---> DONE
+//  exit status ---> DONE just need test whene it's handle in parsing
 //  cd home and oldpwd
-//  exit status
+//  export sort with declar-x var=value
 //  expand on heredoc

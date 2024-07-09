@@ -103,6 +103,7 @@ typedef struct s_data
     int     			save_stdin;
     int     			save_stdout;
     t_env   			*new_env;
+	char				**exec_env;
 	int					exit;
 
 }				t_data;
@@ -189,8 +190,8 @@ void ft_lst_free_env();
 
 // built_in
 void ft_lst_free_env();
-void ft_echo(char **arg);
-int ft_pwd();
+int ft_echo(char **arg);
+void ft_pwd();
 void ft_exit();
 int ft_cd(char **arg);
 void ft_env();
@@ -213,6 +214,9 @@ int		ft_check_is_builtin_parent(t_command *cmd);
 int		ft_check_is_builtin_child(t_command *cmd);
 char *fetch_path_of_cmd(t_env *env, char *cmd);
 void	ft_execute_builtin_parent(t_command *cmd);
+void    ft_create_minimal_env();
+char	**ft_get_exec_env();
+char    *ft_update_shlvl(char *str);
 
 /******************execute******************/
 void    ft_print_prompt();

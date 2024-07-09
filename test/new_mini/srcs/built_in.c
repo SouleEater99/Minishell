@@ -46,6 +46,7 @@ void    ft_pwd()
 
 void ft_exit()
 {
+    data->exit = 0;
     ft_free_all(NULL, 0);
 }
 
@@ -57,11 +58,17 @@ int ft_cd(char **arg)
     while (arg[n_arg])
         n_arg++;
     if (n_arg > 2)
-        return (ft_free_all("bash: cd: too many arguments\n", 1), 1);
+    {
+        ft_putstr_fd("bash: cd: too many arguments\n", 2);
+        return ((data->exit = 1), 0);
+    }
     if (chdir(arg[1]) == -1)
-        return (ft_free_all("No such file or directory\n", 1), 1);
+    {
+        ft_putstr_fd("No such file or directory\n", 2);
+        return ((data->exit = 1), 0);
+    }
     // i need to handle cd - on OLDPWD in env;
     // and cd  which let you go to home;
-    return (ft_free_all(NULL, 0), 0);
+    return ((data->exit = 0), 0);
 }
 
