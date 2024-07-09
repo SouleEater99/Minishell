@@ -28,7 +28,8 @@ void ft_lst_del_env_node(t_env *to_del)
         head = head->next;
     free(to_del->value);
     free(to_del);
-    head->next = next;
+    if (head->next)
+        head->next = next;
 }
 
 int ft_unset(char *var)

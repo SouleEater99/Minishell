@@ -65,6 +65,70 @@ void ft_add_or_update(char *var)
     ft_lst_add_back_env_node(head);
 }
 
+int     ft_calc_env()
+{
+    int     i;
+    t_env   *next;
+
+    i = 0;
+    next = data->new_env;
+    while (next)
+    {
+        next = next->next;
+        i++;
+    }
+    return (i);
+}
+
+char    **ft_get_env_in_tab()
+{
+    char    **tab;
+    int     i;
+    t_env   *next;
+
+    i = ft_calc_env();
+    tab = malloc(sizeof(char *) * (i + 1));
+    next = data->new_env;
+    i = 0;
+    while (next)
+    {
+        tab[i++] = next->value;
+        next = next->next;
+    }
+    tab[i] = NULL;
+    return (tab);   
+}
+
+void    ft_print_export()
+{
+    char    **tab;
+    char    *tmp;
+    int     n;
+
+    tab = ft_get_env_in_tab();
+    data->i = 0;
+    n = ft_calc_env();
+    while (data->i < n)
+    {
+        data->j = 0;
+        while (tab[data->j])
+        {
+            if (tab[data->j + 1] && ft_strcmp(tab[data->j], tab[data->j + 1]) > 0)
+            {
+                tmp = tab[data->j];
+                tab[data->j] = tab[data->j + 1];
+                tab[data->j + 1] = tmp;
+            }
+            data->j++;
+        }
+        data->i++;
+    }
+    data->i = 0;
+    while (tab[data->i])
+        printf("declare -x %s\n", tab[data->i++]);
+    free(tab);
+}
+
 int ft_export(char **arg)
 {
     static unsigned int i;
@@ -76,7 +140,8 @@ int ft_export(char **arg)
             n++;
     if (!arg || n == 1)
     {
-        ft_env();
+        if (data->new_env)
+            ft_print_export();
         return ((data->exit = 0), 0);
     }
     if (arg[i])

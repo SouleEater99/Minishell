@@ -124,6 +124,8 @@ void 	ft_free_all(char *str, int status)
         free(data->cwd);
 	if (data->new_env)
         ft_lst_free_env();
+	// if (data->new_env)
+	// 	free(data->new_env);
 	if (data->path)
 		free(data->path);
 	if (data->tab)
@@ -408,32 +410,6 @@ void	ft_execute_builtin_parent(t_command *cmd)
 	}
 }
 
-char	**ft_get_exec_env()
-{
-	t_env *next;
-	int	i;
-
-	i = 0;
-	next = data->new_env;
-	while (next)
-	{
-		i++;
-		next = next->next;
-	}
-	data->exec_env = malloc(sizeof(char *) * (i + 1));
-	if (!data->exec_env)
-		ft_free_all("error in exec_env allocation", 2);
-	next = data->new_env;
-	i = 0;
-	while (next)
-	{
-		data->exec_env[i++] = next->value;
-		next = next->next;
-	}
-	data->exec_env[i] = NULL;
-	return (data->exec_env);
-}
-
 void	ft_execute_cmd(t_command *cmd)
 {
 	if (ft_return_next_cmd(cmd) != NULL)
@@ -455,7 +431,7 @@ void	ft_execute_cmd(t_command *cmd)
 	ft_check_path(data->path);
 	if (cmd && cmd->type == TOKEN)
 	{
-		data->exec_env = ft_get_exec_env();
+		data->exec_env = ft_get_env_in_tab();
 		execve(data->path, cmd->args, data->exec_env);
 	}
 	ft_free_all("error in execve() in child\n", 1);
@@ -520,4 +496,5 @@ void	ft_execution()
 //  exit status ---> DONE just need test whene it's handle in parsing
 //  cd home and oldpwd
 //  export sort with declar-x var=value
+//	handle export and unset if i delete all env var and i want to create one whene it's NULL
 //  expand on heredoc

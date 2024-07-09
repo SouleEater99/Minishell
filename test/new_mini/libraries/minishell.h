@@ -215,8 +215,10 @@ int		ft_check_is_builtin_child(t_command *cmd);
 char *fetch_path_of_cmd(t_env *env, char *cmd);
 void	ft_execute_builtin_parent(t_command *cmd);
 void    ft_create_minimal_env();
-char	**ft_get_exec_env();
+char    **ft_get_env_in_tab();
+int     ft_calc_env();
 char    *ft_update_shlvl(char *str);
+void    ft_print_export();
 
 /******************execute******************/
 void    ft_print_prompt();
