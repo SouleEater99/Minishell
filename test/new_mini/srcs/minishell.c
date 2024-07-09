@@ -192,6 +192,7 @@ t_env *creat_env(char **env)
 void	init_minishell(int ac, char **av, char **env)
 {
 	//"┌──(aziz㉿aelkheta)-[/nfs/homes/aelkheta/Desktop/minishell]\n└─$ ";
+	ft_bzero(data, sizeof(data));
 	data->ac = ac;
 	// data->env = creat_env(env);
 	ft_create_new_env();

@@ -124,6 +124,12 @@ void 	ft_free_all(char *str, int status)
         free(data->cwd);
 	if (data->new_env)
         ft_lst_free_env();
+	if (data->path)
+		free(data->path);
+	if (data->tab)
+		ft_free_tab(data->tab);
+	if (data->command)
+		clear_list(&data->command);
 	exit(status);
 }
 
@@ -287,30 +293,116 @@ int	check_cmd_is_path(char *cmd)
 	return (0);
 }
 
+void	ft_check_path(char *path)
+{
+	if (!path)
+		return ;
+	if (access(path, F_OK) == 0)
+	{
+		if (access(path, X_OK) != 0)
+		{
+			perror(path);
+			ft_free_all(NULL, 126);
+		}
+	}
+	else
+	{
+		perror(path);
+		ft_free_all(NULL, 127);
+	}
+}
+
 char *fetch_path_of_cmd(t_env *env, char *cmd)
 {
-	char	*path;
-	char	**tab;
 	int		i;
 
 	i = 0;
-	if (check_cmd_is_path(cmd) == 1)
-		return (ft_strdup(cmd));
+	if (check_cmd_is_path(cmd) == 1)  
+		return (ft_check_path(data->path) ,ft_strdup(cmd));
 	while (env && ft_strnstr(env->value, "PATH=", 6) == NULL)
 		env = env->next;
 	if (!env)
 		return (ft_strjoin("./", cmd));
-	tab = ft_split(env->value + 6, ':');
-	if (!tab)
+	data->tab = ft_split(env->value + 6, ':');
+	if (!data->tab)
 		ft_free_all("error in split in fetch path\n", 1);
-	while (tab[i])
+	while (data->tab[i])
 	{
-		path = ft_strjoin_path(tab[i++], cmd, '/');
-		if (access(path, F_OK) == 0)
-        	return (ft_free_tab(tab), path);
-    	free(path);
+		data->path = ft_strjoin_path(data->tab[i++], cmd, '/');
+		if (access(data->path, F_OK) == 0)
+        	return (data->path);
+    	free(data->path);
 	}
-	return (ft_free_tab(tab), NULL);
+	return (NULL);
+}
+
+int		ft_check_is_builtin_child(t_command *cmd)
+{
+	if (strcmp(cmd->value, "echo") == 0 || strcmp(cmd->value, "pwd") == 0)
+		return (1);
+	if (strcmp(cmd->value, "env") == 0 || strcmp(cmd->value, "export") == 0)
+		return (1);
+	return (0);
+}
+
+
+int		ft_check_is_builtin_parent(t_command *cmd)
+{
+	int	i;
+
+	i = 0;
+	if (strcmp(cmd->value, "exit") == 0 || strcmp(cmd->value, "cd") == 0)
+		return (1);
+	else if (strcmp(cmd->value, "unset") == 0)
+		return (1);
+	else if (strcmp(cmd->value, "export") == 0)
+	{
+		while (cmd->args[i])
+			i++;
+		if (i > 1)
+			return (1);
+	}
+	return (0);
+}
+
+void		ft_execute_builtin_child(t_command *cmd)
+{
+	int		i;
+
+	i = 0;
+	if (ft_strcmp(cmd->value, "env") == 0)
+		ft_env();
+	else if (ft_strcmp(cmd->value, "pwd") == 0)
+		ft_pwd();
+	else if (ft_strcmp(cmd->value, "echo") == 0)
+		ft_echo(cmd->args);
+	else if (ft_strcmp(cmd->value, "export") == 0)
+	{
+		while (cmd->args[i])
+			i++;
+		if (i == 1)
+			ft_export(cmd->args);
+	}
+}
+
+void	ft_execute_builtin_parent(t_command *cmd)
+{
+	int		i;
+
+	i = 0;
+	if (ft_strcmp(cmd->value, "cd") == 0)
+		ft_cd(cmd->args);
+	else if (ft_strcmp(cmd->value, "exit") == 0)
+		ft_exit();
+	else if (ft_strcmp(cmd->value, "unset") == 0)
+		ft_unset(cmd->args[0]);
+	else if (ft_strcmp(cmd->value, "export") == 0)
+	{
+		while (cmd->args[i])
+			i++;
+		if (i >= 2)
+			ft_export(cmd->args);
+	}
 }
 
 void	ft_execute_cmd(t_command *cmd)
@@ -323,26 +415,15 @@ void	ft_execute_cmd(t_command *cmd)
 	close(data->pipe_line[0]);
 	close(data->pipe_line[1]);
 	ft_close_free_heredoc_pipes();
+	if (ft_check_is_builtin_child(cmd) == 1)
+		ft_execute_builtin_child(cmd);
 	data->path = fetch_path_of_cmd(data->new_env, cmd->value);
-	// if (!data->path)
-	// 	ft_free_all("No such file or directory\n", 127);
-	// else if (data->path)
-	// {
-	// 	if (access(data->path, F_OK) == 0)
-	// 	{
-	// 		if (access(data->path, X_OK) != 0)
-	// 		{
-	// 			free(data->path);
-	// 			ft_free_all("No such file or directory\n", 127);
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		free(data->path);
-	// 		ft_free_all("permission denied\n", 126);
-	// 	}
-
-	// }
+	if (!data->path)
+	{
+		perror(cmd->value);
+		ft_free_all(NULL, 127);
+	}
+	ft_check_path(data->path);
 	if (cmd && cmd->type == TOKEN )
 		execve(data->path, cmd->args, data->old_env);
 	ft_free_all("error in execve() in child\n", 1);
@@ -351,6 +432,7 @@ void	ft_execute_cmd(t_command *cmd)
 void	ft_execution()
 {
 	t_command	*cmd;
+	t_command	*cmd_index;
 	
 	data->save_stdin = dup(STDIN_FILENO);
 	data->save_stdout = dup(STDOUT_FILENO);
@@ -359,15 +441,21 @@ void	ft_execution()
 	cmd = data->command;
 	data->n_cmd = ft_numbers_of_cmd(data->command);
 	data->i = 0;
-	while (data->i < data->n_cmd)
+	while (cmd && data->i < data->n_cmd)
 	{
 		if (pipe(data->pipe_line) == -1)
 			ft_free_all("error in open pipe_line \n", 1); // i need to close all pipe of here-doc if they exist.
-		data->pid = fork();
-		if (data->pid == -1)
-			ft_free_all("error in creating child process \n", 1);
-		if (data->pid == 0)
-			ft_execute_cmd(cmd);
+		cmd_index = ft_return_cmd_index(cmd);
+		if (cmd_index && ft_check_is_builtin_parent(cmd_index) == 1)
+			ft_execute_builtin_parent(cmd_index);
+		else
+		{
+			data->pid = fork();
+			if (data->pid == -1)
+				ft_free_all("error in creating child process \n", 1);
+			if (data->pid == 0)
+				ft_execute_cmd(cmd);
+		}
 		if (dup2(data->pipe_line[0], STDIN_FILENO) == -1)
 			ft_free_all("error in open pipe_line in parent", 1);
 		close(data->pipe_line[0]);
@@ -383,3 +471,13 @@ void	ft_execution()
 		;
 	//sleep(1000);
 }
+
+
+
+//  what i need to handel : ft_exit with SHELVL minishell inside minishell
+//  env if it's NULL
+//  export sort with declar-x var=value
+//  pwd and oldpwd and shlvl always need to update.
+//  cd home and oldpwd
+//  exit status
+//  expand on heredoc

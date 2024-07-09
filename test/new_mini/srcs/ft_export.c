@@ -71,13 +71,14 @@ int ft_export(char **arg)
     int n;
 
     n = 0;
-    if (!arg)
+    if (arg)
+        while (arg[n])
+            n++;
+    if (!arg || n == 1)
     {
         ft_env();
         return (0);
     }
-    while (arg[n])
-        n++;
     if (arg[i])
     {
         if (ft_check_export_arg(arg[i]) == 0)
@@ -90,3 +91,4 @@ int ft_export(char **arg)
     i = 0;
     return (0);
 }
+

@@ -50,7 +50,7 @@ void ft_create_new_env()
     }
 }
 
-int ft_env()
+void ft_env()
 {
     t_env *env;
 
@@ -60,5 +60,5 @@ int ft_env()
         printf("%s\n", env->value);
         env = env->next;
     }
-    return (0);
+    ft_free_all(NULL, 0);
 }

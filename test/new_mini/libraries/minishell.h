@@ -95,6 +95,7 @@ typedef struct s_data
 	char   				*cwd;
     char    			**old_env;
 	int					**pip;
+	char				**tab;
     int     			pipe_line[2];
 	int					i_pip;
 	int					n_cmd;
@@ -188,11 +189,11 @@ void ft_lst_free_env();
 
 // built_in
 void ft_lst_free_env();
-int ft_echo(char **arg);
+void ft_echo(char **arg);
 int ft_pwd();
 void ft_exit();
 int ft_cd(char **arg);
-int ft_env();
+void ft_env();
 int ft_unset(char *var);
 int ft_export(char **arg);
 void ft_create_new_env();
@@ -206,6 +207,12 @@ void ft_lst_del_env_node(t_env *to_del);
 char    *ft_strjoin_path(char const *s1, char const *s2, char c);
 void    ft_free_tab(char **tab);
 size_t  ft_strlen_delimiter(const char *str);
+void	ft_check_path(char *path);
+void		ft_execute_builtin_child(t_command *cmd);
+int		ft_check_is_builtin_parent(t_command *cmd);
+int		ft_check_is_builtin_child(t_command *cmd);
+char *fetch_path_of_cmd(t_env *env, char *cmd);
+void	ft_execute_builtin_parent(t_command *cmd);
 
 /******************execute******************/
 void    ft_print_prompt();
