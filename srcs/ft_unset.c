@@ -1,4 +1,5 @@
-#include "../include/minishell.h"
+// #include "../include/minishell.h"
+#include "../libraries/minishell.h"
 
 int ft_check_env_var(char *env, char *var)
 {
@@ -20,14 +21,19 @@ void ft_lst_del_env_node(t_env *to_del)
 {
     t_env *head;
     t_env *next;
-
+    
+    if (!to_del || !data->new_env)
+        return ;
     head = data->new_env;
     next = to_del->next;
-    while (head->next && head->next != to_del)
-        head = head->next;
+    if (head && head == to_del)
+        data->new_env = head->next;
+    else
+        while (head->next && head->next != to_del)
+            head = head->next;
+    head->next = next;
     free(to_del->value);
     free(to_del);
-    head->next = next;
 }
 
 int ft_unset(char *var)
@@ -36,7 +42,9 @@ int ft_unset(char *var)
     t_env *tmp;
 
     if (!var || *var == '\0')
-        ft_free_all("unset: : invalid parameter\n", 1);
+    {
+        return ((data->exit = 0), 0);
+    }
     head = data->new_env;
     while (head)
     {
@@ -45,5 +53,5 @@ int ft_unset(char *var)
             ft_lst_del_env_node(head);
         head = tmp;
     }
-    return (0);
+    return ((data->exit = 0), 0);
 }

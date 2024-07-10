@@ -61,7 +61,10 @@ void ft_add_or_update(char *var)
         head = head->next;
     }
     free(identifier);
-    head = ft_lst_create_env_node(var);
+    if (data->new_env)
+        head = ft_lst_create_env_node(var);
+    else
+        data->new_env = ft_lst_create_env_node(var);
     ft_lst_add_back_env_node(head);
 }
 

@@ -62,6 +62,10 @@ int ft_cd(char **arg)
         ft_putstr_fd("bash: cd: too many arguments\n", 2);
         return ((data->exit = 1), 0);
     }
+    else if (n_arg == 1)
+    {
+        
+    }
     if (chdir(arg[1]) == -1)
     {
         ft_putstr_fd("No such file or directory\n", 2);

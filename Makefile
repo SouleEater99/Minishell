@@ -1,28 +1,63 @@
-CC = gcc -Wall -Wextra -Werror -lreadline  -fsanitize=address -g3
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: aelkheta <aelkheta@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/05/13 14:40:15 by aelkheta          #+#    #+#              #
+#    Updated: 2024/06/30 12:39:17 by aelkheta         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+
 NAME = minishell
-SRC	=	./src/minishell.c \
-		./src/minishell_utils.c \
-		./src/built_in.c \
-		./src/exec_utils.c \
-		./src/free.c \
-		./src/ft_env.c \
-		./src/ft_export.c \
-		./src/ft_unset.c \
-		./src/parse_utils.c \
-		./src/utils.c \
+CC = cc
+CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
+RLFLAG = -lreadline
+SRCDIR = ./srcs
+OBJDIR = ./objs
 
-OBJ	=	$(SRC:.c=.o)
+SRC = 	$(SRCDIR)/minishell.c \
+		$(SRCDIR)/built_in_cmd1.c \
+		$(SRCDIR)/built_in_cmd2.c \
+		$(SRCDIR)/cleanup.c \
+		$(SRCDIR)/mini_utiles.c \
+		$(SRCDIR)/tokenizer.c \
+		$(SRCDIR)/parsing.c \
+		$(SRCDIR)/parsing_utiles.c \
+		$(SRCDIR)/execution.c \
+		$(SRCDIR)/minishell_utils.c \
+		$(SRCDIR)/ft_unset.c \
+		$(SRCDIR)/ft_env.c \
+		$(SRCDIR)/ft_export.c \
+		$(SRCDIR)/built_in.c \
 
-all : $(NAME)
+OBJ = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC)) # for pathern substitution // $(patsubst pattern,replacement,text)
 
-$(NAME) : $(OBJ) 
-	$(CC) $(OBJ) -o $(NAME)
+LIBFT = ./libraries/libft/libft.a
 
+all: $(NAME)
 
-clean :
-	rm -rf $(OBJ)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(OBJDIR)
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-fclean : clean
-	rm -rf $(NAME)
+$(NAME): $(OBJ)
+	@echo "Building..."
+	@$(CC) $(CFLAGS) $(OBJ) $(RLFLAG) $(LIBFT) -o $@
+	@echo "Building done"
 
-re : fclean all
+clean:
+	@echo "Removing object files..."
+	@rm -rf $(OBJDIR)/*.o
+	@echo "Removing object files done"
+
+fclean: clean
+	@echo "Removing program name..."
+	@rm -f $(NAME)
+	@echo "Removing program name done"
+
+re: fclean all
+
+.PHONY: all clean fclean re

@@ -494,7 +494,9 @@ void	ft_execution()
 //  env if it's NULL ---> DONE
 //  pwd and oldpwd and shlvl always need to update. ---> DONE
 //  exit status ---> DONE just need test whene it's handle in parsing
+//  export sort with declar-x var=value -----> DONE
+//	handle export and unset if i delete all env var and i want to create one whene it's NULL ---> DONE
 //  cd home and oldpwd
-//  export sort with declar-x var=value
-//	handle export and unset if i delete all env var and i want to create one whene it's NULL
+//	still need to handle prompot too dynamic pwd and username and host
+//	check SHLVL if DELETE IF can increament again
 //  expand on heredoc
