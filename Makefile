@@ -1,63 +1,35 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: aelkheta <aelkheta@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/05/13 14:40:15 by aelkheta          #+#    #+#              #
-#    Updated: 2024/06/30 12:39:17 by aelkheta         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-
 NAME = minishell
 CC = cc
+#CFLAGS = -g3 -fsanitize=address
 CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
-RLFLAG = -lreadline
-SRCDIR = ./srcs
-OBJDIR = ./objs
+READLINE = -lreadline
+LIBFT = ./include/lib_ft/libft.a
+SRC =	./srcs/minishell.c \
+		./srcs/execution_part/built_in.c \
+		./srcs/execution_part/execution.c \
+		./srcs/execution_part/ft_env.c \
+		./srcs/execution_part/ft_export.c \
+		./srcs/execution_part/prompt.c \
+		./srcs/execution_part/ft_unset.c \
+		./srcs/utils/get_next_line.c \
+		./srcs/utils/get_next_line_utils.c \
+		./srcs/utils/utils.c \
+	
 
-SRC = 	$(SRCDIR)/minishell.c \
-		$(SRCDIR)/built_in_cmd1.c \
-		$(SRCDIR)/built_in_cmd2.c \
-		$(SRCDIR)/cleanup.c \
-		$(SRCDIR)/mini_utiles.c \
-		$(SRCDIR)/tokenizer.c \
-		$(SRCDIR)/parsing.c \
-		$(SRCDIR)/parsing_utiles.c \
-		$(SRCDIR)/execution.c \
-		$(SRCDIR)/minishell_utils.c \
-		$(SRCDIR)/ft_unset.c \
-		$(SRCDIR)/ft_env.c \
-		$(SRCDIR)/ft_export.c \
-		$(SRCDIR)/built_in.c \
-
-OBJ = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC)) # for pathern substitution // $(patsubst pattern,replacement,text)
-
-LIBFT = ./libraries/libft/libft.a
+OBJ = $(SRC:.c=.o)
 
 all: $(NAME)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	@mkdir -p $(OBJDIR)
-	@$(CC) $(CFLAGS) -c $< -o $@
+$(NAME) : $(OBJ) $(LIBFT)
+	$(CC) $(OBJ) $(READLINE) $(CFLAGS) $(LIBFT) -o $(NAME)
 
-$(NAME): $(OBJ)
-	@echo "Building..."
-	@$(CC) $(CFLAGS) $(OBJ) $(RLFLAG) $(LIBFT) -o $@
-	@echo "Building done"
+$(LIBFT) :
+	make -sC ./include/lib_ft all
 
-clean:
-	@echo "Removing object files..."
-	@rm -rf $(OBJDIR)/*.o
-	@echo "Removing object files done"
-
-fclean: clean
-	@echo "Removing program name..."
-	@rm -f $(NAME)
-	@echo "Removing program name done"
-
-re: fclean all
-
-.PHONY: all clean fclean re
+clean :
+	rm -rf $(OBJ)
+	make -sC include/lib_ft clean
+fclean : clean
+	rm -rf $(NAME)
+	make -sC include/lib_ft fclean
+re : fclean all
