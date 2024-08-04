@@ -42,10 +42,21 @@ void    ft_pwd()
     ft_free_all (NULL, 0);
 }
 
-void ft_exit()
+int ft_exit(char **args)
 {
-    data->exit = 0;
-    ft_free_all(NULL, 0);
+    int i;
+    unsigned char c;
+
+    i = 0;
+    if (!args || !args[1])
+        ft_free_all(NULL, 0);
+    while (args[i])
+        i++;
+    if (i > 2)
+        return ((data->exit = 2), ft_putstr_fd("bash: exit: too many arguments\n", 2), 0);
+    c = ft_atoi(args[1]);
+    ft_free_all(NULL, c);
+    return (0);
 }
 
 char    *ft_expand_var(char *var)

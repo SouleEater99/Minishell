@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mini_shell.h                                       :+:      :+:    :+:   */
+/*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/29 14:32:52 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/06/01 09:54:41 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/07/30 11:00:02 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,15 @@
 # include <readline/readline.h>                 // readline GNU library
 # include "./lib_ft/libft.h"
 # include "./get_next_line.h"
+
+#define RESET   "\x1B[0m"
+#define RED     "\x1B[31m"
+#define GREEN   "\x1B[32m"
+#define YELLOW  "\x1B[33m"
+#define BLUE    "\x1B[34m"
+#define MAGENTA "\x1B[35m"
+#define CYAN    "\x1B[36m"
+
 #define EMPTY 0
 #define CMD 1
 #define ARG 2
@@ -72,6 +81,14 @@ typedef struct s_env
     struct s_env *next;
 } t_env;
 
+typedef struct s_token
+{
+    char *input;
+    int type;
+    struct s_token *prev;
+    struct s_token *next;
+} t_token;
+
 typedef struct s_data
 {
     int i;
@@ -83,6 +100,7 @@ typedef struct s_data
     char *prompt;
     char *line;
     t_command *command;
+    t_token *token;
     char *path;
     pid_t pid;
     char    *hostname;
@@ -97,20 +115,13 @@ typedef struct s_data
     int save_stdout;
     t_env *new_env;
     char **exec_env;
+    int syn_err;
     int exit;
 
 }t_data;
 
 
 /************************************************/
-
-typedef struct s_token
-{
-    char *input;
-    int type;
-    struct s_token *prev;
-    struct s_token *next;
-} t_token;
 
 typedef struct s_parser
 {
@@ -124,12 +135,12 @@ typedef struct s_parser
 typedef struct s_tools
 {
     t_token *cmd;
-    t_parser *parse;
+    t_env   *env;
     int ext;
 
 } t_tools;
 
-
+char	*expand_str(char *str,t_env *envp);
 
 
 extern t_data *data; // for global var
@@ -162,7 +173,7 @@ void ft_lst_free_env();
 void ft_lst_free_env();
 int ft_echo(char **arg);
 void ft_pwd();
-void ft_exit();
+int ft_exit(char **args);
 int ft_cd(char **arg);
 void ft_env();
 int ft_unset(char *var);
@@ -198,6 +209,10 @@ void    ft_init_hostname();
 int    ft_change_dir(char *path);
 void	ft_free_command(t_command *cmd);
 void	ft_free_utils();
+char **ft_copy_tab(char **arg, t_parser *pars, t_token *token);
+void	ft_sig_handler(int sig);
+void	ft_sig_handler_child(int sig);
+void	ft_print_to_nl(char *str);
 
 /******************execute******************/
 void    ft_print_prompt();

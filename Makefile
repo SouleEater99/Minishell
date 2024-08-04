@@ -1,7 +1,6 @@
 NAME = minishell
 CC = cc
-#CFLAGS = -g3 -fsanitize=address
-CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror  -g3 -fsanitize=address
 READLINE = -lreadline
 LIBFT = ./include/lib_ft/libft.a
 SRC =	./srcs/minishell.c \
@@ -14,6 +13,7 @@ SRC =	./srcs/minishell.c \
 		./srcs/utils/get_next_line.c \
 		./srcs/utils/get_next_line_utils.c \
 		./srcs/utils/utils.c \
+		./srcs/expansion.c \
 	
 
 OBJ = $(SRC:.c=.o)

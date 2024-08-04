@@ -1,16 +1,43 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   mini_shell.c                                       :+:      :+:    :+:   */
+/*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/29 14:32:56 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/06/01 09:29:30 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/08/01 10:20:56 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
+
+
+void free_token_list(t_token *token)
+{
+    t_token *next;
+
+    while (token)
+    {
+        next = token->next;
+		free(token->input);
+        free(token);
+        token = next;
+    }
+}
+
+void free_parser_list(t_parser *pars)
+{
+	t_parser *tmp;
+
+    while (pars)
+    {
+		tmp = pars->next;
+		free(pars);
+		pars = tmp;
+    }
+}
+
 
 t_data *data = NULL;
 
@@ -30,9 +57,9 @@ char	*ft_strchr(const char *s, int c)
 
 void    get_tokens_type(t_token *token, int sep)
 {
-    if((ft_strcmp(token->input, "")) == 0)
-        token->type = EMPTY;
-	else if (ft_strcmp(token->input, ">") == 0 && sep == 0)
+    // if((ft_strcmp(token->input, "")) == 0)
+    //     token->type = EMPTY;
+	if (ft_strcmp(token->input, ">") == 0 && sep == 0)
 		token->type = TRUNC;
 	else if (ft_strcmp(token->input, ">>") == 0 && sep == 0)
 		token->type = APPEND;
@@ -51,58 +78,58 @@ void    get_tokens_type(t_token *token, int sep)
 
 int alloc(char *line, int *start)
 {
-    int     count;
-    int     i;
-    char    c;
+    int count = 0;
+    int i = 0;
+    char c = ' ';
     
-    count = 0;
-    i = 0;
-    c = ' ';
     while (line[*start + i] && (line[*start + i] != ' ' || c != ' '))
     {
         if (c == ' ' && (line[*start + i] == '\'' || line[*start + i] == '\"'))
+        {
             c = line[*start + i++];
+            count++;
+        }
         else if (c != ' ' && line[*start + i] == c)
         {
-            count += 2;
+            count++;
             c = ' ';
             i++;
         }
         else
             i++;
-        if (line[*start + i - 1] == '\\')
-            count--;
     }
-    return (i - count + 1);
+    return (i + count + 1); // I Added 1 to account for the null terminator
 }
 
-t_token	*next_token(char *line, int *i)
+t_token *next_token(char *line, int *i)
 {
-	t_token	*token;
-	int		j;
-	char	c;
+    t_token *token;
+    int j = 0;
+    char c = ' ';
 
-	j = 0;
-	c = ' ';
-	if (!(token = malloc(sizeof(t_token)))
-	|| !(token->input = malloc(sizeof(char) * alloc(line, i)))) //memory allocated here!!!!!!!!!!!!!!!!!!!!!!!!
-		return (NULL);
-	while (line[*i] && (line[*i] != ' ' || c != ' '))
-	{
-		if (c == ' ' && (line[*i] == '\'' || line[*i] == '\"'))
-			c = line[(*i)++];
-		else if (c != ' ' && line[*i] == c)
-		{
-			c = ' ';
-			(*i)++;
-		}
-		else if (line[*i] == '\\' && (*i)++)
-			token->input[j++] = line[(*i)++];
-		else
-			token->input[j++] = line[(*i)++];
-	}
-	token->input[j] = '\0';
-	return (token);
+    if (!(token = malloc(sizeof(t_token))) || !(token->input = malloc(sizeof(char) * alloc(line, i))))
+        return (NULL);
+
+    while (line[*i] && (line[*i] != ' ' || c != ' '))
+    {
+        if (c == ' ' && (line[*i] == '\'' || line[*i] == '\"'))
+        {
+            c = line[*i];
+            token->input[j++] = line[(*i)++];
+        }
+        else if (c != ' ' && line[*i] == c)
+        {
+            c = ' ';
+            token->input[j++] = line[(*i)++];
+        }
+        else if (line[*i] == '\\' && (*i)++)
+            token->input[j++] = line[(*i)++];
+        else
+            token->input[j++] = line[(*i)++];
+    }
+
+    token->input[j] = '\0';
+    return token;
 }
 
 void	ft_skip_space(const char *str, int *i)
@@ -202,6 +229,16 @@ char	*allocate_line(char *line)
 	return (new);
 }
 
+void	*ft_memdel(void *ptr)
+{
+	if (ptr)
+	{
+		free(ptr);
+		ptr = NULL;
+	}
+	return (NULL);
+}
+
 char	*formate_line(char *line)
 {
 	char	*new;
@@ -236,7 +273,7 @@ char	*formate_line(char *line)
 	}
 	new[j] = '\0';
 	printf("%s\n", new);
-	//ft_memdel(line);
+	ft_memdel(line);
 	return (new);
 }
 
@@ -266,6 +303,7 @@ t_token	*get_tokens(char *line)
 		next->next = NULL;
 	while (next && next->prev)
 		next = next->prev;
+	ft_memdel(line);
 	return (next);
 }
 
@@ -339,11 +377,11 @@ char	**line_tab(t_token *start)
 	if (!(tab = malloc(sizeof(char *) * i)))
 		return (NULL);
 	token = start->next;
-	tab[0] = start->input;
+	tab[0] = ft_strdup(start->input);
 	i = 1;
 	while (token && token->type < TRUNC)
 	{
-		tab[i++] = token->input;
+		tab[i++] = ft_strdup(token->input);
 		token = token->next;
 	}
 	tab[i] = NULL;
@@ -385,8 +423,9 @@ t_parser *fill_parse_struct(t_tools *tools)
     t_parser *pars = NULL;
     t_parser *current_parser = NULL;
     t_token *token = tools->cmd;
-
-	token->type = CMD;
+	
+	if (token && token->type == ARG)
+		token->type = CMD;
     while (token)
     {
 		if (!pars)
@@ -402,9 +441,10 @@ t_parser *fill_parse_struct(t_tools *tools)
         // Set the values for the current parser node
 		if (token && token->type != ARG)
 		{
-			current_parser->str = token->input;
+			current_parser->str = ft_strdup(token->input);
 			current_parser->type = token->type;
-			current_parser->args = line_tab(token);
+			if (token->type != PIPE)
+				current_parser->args = line_tab(token);
 			current_parser->index = -1;
 			current_parser->next = NULL;
 		}
@@ -419,7 +459,7 @@ t_parser *fill_parse_struct(t_tools *tools)
 			token = token->next;
 
         token = token->next;
-		while (token && token->type == ARG)
+		while (token && (token->type == ARG || token->type == EMPTY))
 			token = token->next;
     }
 
@@ -427,13 +467,13 @@ t_parser *fill_parse_struct(t_tools *tools)
     current_parser = pars;
     while (current_parser)
     {
-        printf("str: %s type: %d args: ", current_parser->str, current_parser->type);
+        printf("str: %s type: %d args: || addr %p", current_parser->str, current_parser->type, current_parser->str);
         if (current_parser->args)
         {
             char **arg = current_parser->args;
             while (*arg)
             {
-                printf("\"%s\" ", *arg);
+                printf("\"%s || %p\" ", *arg, *arg);
                 arg++;
             }
         }
@@ -455,52 +495,50 @@ t_parser *fill_parse_struct(t_tools *tools)
 
 //syntax error
 
-// void	ft_putendl_fd(char *s, int fd)
-// {
-// 	int	i;
+void	ft_putendl_fd(char *s, int fd)
+{
+	int	i;
 
-// 	i = 0;
-// 	if (s == NULL)
-// 		return ;
-// 	while (s[i] != '\0')
-// 	{
-// 		write(fd, &s[i], 1);
-// 		i++;
-// 	}
-// 	write(fd, "\n", 1);
-// }
+	i = 0;
+	if (s == NULL)
+		return ;
+	while (s[i] != '\0')
+	{
+		write(fd, &s[i], 1);
+		i++;
+	}
+	write(fd, "\n", 1);
+}
 
-// void	ft_putstr_fd(char *s, int fd)
-// {
-// 	int	i;
 
-// 	i = 0;
-// 	if (s == NULL)
-// 		return ;
-// 	while (s[i] != '\0')
-// 	{
-// 		write(fd, &s[i], 1);
-// 		i++;
-// 	}
-// }
+int		synatx_err(t_tools *tools)
+{
+	t_token	*token;
 
-// int		synatx_err(t_tools *mini, t_token *token)
-// {
-// 	while (token)
-// 	{
-// 		if (is_types(token, "TAI")
-// 		&& (!token->next || is_types(token->next, "TAIPE")))
-// 		{
-// 			ft_putstr_fd("bash: syntax error near unexpected token `", 2);
-// 			token->next ? ft_putstr_fd(token->next->input, 2) : 0;
-// 			token->next ? 0 : ft_putstr_fd("newline", 2);
-// 			ft_putendl_fd("'", 2);
-// 			return (0);
-// 		}
-// 		token = token->next;
-// 	}
-// 	return (1);
-// 
+	token	= tools->cmd;
+	while (token)
+	{
+		if (is_type(token, PIPE) && (!token->prev))
+		{
+			ft_putstr_fd("bash: syntax error near unexpected token `", 2);
+			token->next ? ft_putstr_fd(token->input, 2) : 0;
+			token->next ? 0 : ft_putstr_fd("newline", 2);
+			ft_putendl_fd("'", 2);
+			return (0);
+		}
+		if (is_types(token, "TAIPH")
+		&& (!token->next || is_types(token->next, "TAIPH")))
+		{
+			ft_putstr_fd("bash: syntax error near unexpected token `", 2);
+			token->next ? ft_putstr_fd(token->next->input, 2) : 0;
+			token->next ? 0 : ft_putstr_fd("newline", 2);
+			ft_putendl_fd("'", 2);
+			return (0);
+		}
+		token = token->next;
+	}
+	return (1);
+}
 
 // +++++++++++++++++++++++++++++ { from here i started to merge} ++++++++++++++++++++++++++++++++++++
 
@@ -515,6 +553,7 @@ void	ft_add_back_cmd(t_command *command)
 		tmp = tmp->next;
 	tmp->next = command;
 }
+
 
 t_command *ft_copy_pars_to_cmd(t_parser *pars)
 {
@@ -551,66 +590,6 @@ void	ft_replace_our_struct(t_parser *pars)
 		pars = pars->next;
 	}
 }
-
-void    ft_final_result(char *line)
-{
-    t_tools* tools = malloc(sizeof(t_tools));
-
-    tools->cmd = NULL;  // Initialize cmd to NULL
-    t_token* token = malloc(sizeof(t_token));
-    token->input = formate_line(line);
-    add_history(token->input);
-    tools->cmd = get_tokens(token->input);
-	line_args(tools);
-	// synatx_err(tools, token);
-
-    // Print tokens
-    t_token* current_token = tools->cmd;
-    while (current_token != NULL) {
-        printf("%s [%d]\n", current_token->input, current_token->type);
-        current_token = current_token->next;
-    }
-	// char	**temp;
-
-	// temp = line_tab(tools->cmd);
-	// int i = 0;
-	// printf("\nLines:\n");
-    // while (temp[i])
-	// {
-    //     printf("%s\n", temp[i]);
-    //     i++;
-    // }
-
-	t_parser *pars;
-
-	pars = fill_parse_struct(tools);
-	ft_replace_our_struct(pars);
-	ft_heredoc();
-
-    free(token->input);
-    free(token);
-    free(tools->cmd);
-    free(tools);
-
-}
-
-void	ft_init_minishell(int ac, char **av, char **env)
-{
-    if (ac != 1)
-	{
-        ft_free_all("error in pass more args\n", 1);
-	}
-	data = malloc(sizeof(t_data));  // i need to use calloc instead of malloc 
-	if (!data)
-		ft_free_all("error in alloc data\n", 1);
-	ft_bzero(data, sizeof(t_data));
-	data->ac = ac;
-	data->av = av;
-	data->old_env = env;
-	ft_create_new_env();
-}
-
-// =++++++++++++++++++++++++++++++  { part of printf commands } +++++++++++++++++++++++++++++++++++=
 
 void print_type(int type)
 {
@@ -657,6 +636,139 @@ void print_list(t_command *table)
 	}
 }
 
+void    ft_final_result(char *line)
+{
+    t_tools* tools = malloc(sizeof(t_tools));
+	char	*input;
+	
+    tools->cmd = NULL;  // Initialize cmd to NULL
+    // t_token* token = malloc(sizeof(t_token));
+    input = formate_line(line);
+    add_history(input);
+    tools->cmd = get_tokens(input);
+	line_args(tools);
+	data->syn_err = synatx_err(tools);
+    // Print tokens
+    t_token* current_token = tools->cmd;
+    while (current_token != NULL) {
+        printf("%s [%d]\n", current_token->input, current_token->type);
+        current_token = current_token->next;
+    }
+	t_parser *pars;
+
+	printf("**********expand**********\n");
+	printf("\n%s\n", expand_str("$12USER$HOME+OMAR", tools->env));
+	printf("\n**************************\n");
+	if (data->syn_err == 1)
+	{
+		pars = fill_parse_struct(tools);
+		ft_replace_our_struct(pars);
+		free_parser_list(pars);
+	}
+	else
+	{
+		data->exit = 2;
+		data->command = NULL;
+	}
+	free_token_list(tools->cmd);
+    free(tools);
+	ft_heredoc();
+
+}
+
+void print_banner()
+{
+    printf("\n");
+    printf(CYAN   "        .---.         .-----------\n" RESET);
+    printf(BLUE   "       /     \\  __  /    ------\n" RESET);
+    printf(GREEN  "      / /     \\(  )/    -----\n" RESET);
+    printf(YELLOW "     //////   ' \\/ `   ---      " MAGENTA " ███╗   ███╗██╗███╗   ██╗██╗\n" RESET);
+    printf(RED    "    //// / // :    : ---       " MAGENTA " ████╗ ████║██║████╗  ██║██║\n" RESET);
+    printf(MAGENTA"   // /   /  /`    '--         " CYAN   " ██╔████╔██║██║██╔██╗ ██║██║\n" RESET);
+    printf(CYAN   "  //          //..\\\\          " BLUE   " ██║╚██╔╝██║██║██║╚██╗██║██║\n" RESET);
+    printf(BLUE   "         ====UU====UU====      " GREEN  " ██║ ╚═╝ ██║██║██║ ╚████║███████╗\n" RESET);
+    printf(GREEN  "             '//||\\\\`         " YELLOW " ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝\n" RESET);
+    printf(YELLOW "               ''``            " RED    " ███████╗██╗  ██╗███████╗██╗     ██╗\n" RESET);
+    printf(RED    "                               " MAGENTA " ██╔════╝██║  ██║██╔════╝██║     ██║\n" RESET);
+    printf(MAGENTA"                               " CYAN   " ███████╗███████║█████╗  ██║     ██║\n" RESET);
+    printf(CYAN   "                               " BLUE   " ╚════██║██╔══██║██╔══╝  ██║     ██║\n" RESET);
+    printf(BLUE   "                               " GREEN  " ███████║██║  ██║███████╗███████╗███████╗\n" RESET);
+    printf(GREEN  "                               " YELLOW " ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n" RESET);
+    printf(YELLOW "\n          Welcome to Minishell - Version 24.07.31\n\n" RESET);
+}
+
+void	ft_print_to_nl(char *str)
+{
+	int	i;
+	int	n_nl;
+
+	
+	n_nl = 0;
+	i = 0;
+	if (!str)
+		return ;
+	while (str[i])
+	{
+		if (str[i] == '\n')
+			n_nl = i;
+		i++;
+	}
+	i = 0;
+	while (str[i] && i <= n_nl)
+		write(1, &str[i++], 1);
+}
+
+void	ft_sig_handler_child(int sig)
+{
+	if (sig == SIGINT)
+	{
+		// ft_putstr_fd("++++++++++++++ { Terminated } ++++++++++++++++++++\n", 2);
+		ft_free_all(NULL, 130);
+	}
+	else if (sig == SIGQUIT)
+	{
+		ft_free_all("Quit\n", 131);
+	}
+}
+
+
+void	ft_sig_handler(int sig)
+{
+	if (sig == SIGINT)
+	{
+		ft_free_utils();
+		data->exit = 130;
+		data->command = NULL;
+		write (1, "\n", 1);
+		rl_on_new_line();
+		ft_print_to_nl(ft_prompt());
+		rl_replace_line("", 0);
+		rl_redisplay();
+	}
+}
+
+void	ft_init_minishell(int ac, char **av, char **env)
+{
+    if (ac != 1)
+	{
+        ft_free_all("error in pass more args\n", 1);
+	}
+	signal(SIGINT, ft_sig_handler);
+	signal(SIGQUIT, SIG_IGN);
+	print_banner();
+	data = malloc(sizeof(t_data));  // i need to use calloc instead of malloc 
+	if (!data)
+		ft_free_all("error in alloc data\n", 1);
+	ft_bzero(data, sizeof(t_data));
+	data->ac = ac;
+	data->av = av;
+	data->old_env = env;
+	ft_create_new_env();
+}
+
+// =++++++++++++++++++++++++++++++  { part of printf commands } +++++++++++++++++++++++++++++++++++=
+
+
 
 
 int main(int ac, char** av, char** env)
@@ -669,7 +781,9 @@ int main(int ac, char** av, char** env)
 	print_list(data->command);
 	while (data->line)
 	{
+		signal(SIGINT, SIG_IGN);
 		ft_execution();
+		signal(SIGINT, ft_sig_handler);
 		ft_free_utils();
 		data->line = readline(ft_prompt());
 		if (data->line)

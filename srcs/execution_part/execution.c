@@ -119,7 +119,7 @@ void	ft_free_command(t_command *cmd)
 	while (cmd)
 	{
 		tmp = cmd->next;
-		// free(cmd->value); // i don't need to free it cause it's address come from cmd->args
+		free(cmd->value); // i don't need to free it cause it's address come from cmd->args
 		ft_free_tab(cmd->args);
 		free(cmd);
 		cmd = tmp;
@@ -148,11 +148,6 @@ void	ft_free_utils()
 		{
 			ft_free_tab(data->exec_env);
 			data->exec_env = NULL;
-		}
-		if (data->line)
-		{
-			free(data->line);
-			data->line = NULL;
 		}
 		if (data->prompt)
 		{
@@ -187,8 +182,6 @@ void ft_free_all(char *str, int status)
 			free(data->username);
 		if (data->hostname)
 			free(data->hostname);
-		if (data->line)
-			free(data->line);
 		if (data->prompt)
 			free(data->prompt);
 		if (data->command)
@@ -207,7 +200,9 @@ int ft_init_heredoc_pip()
 	data->n_heredoc = ft_check_heredoc(data->command);
 	if (data->n_heredoc <= 0)
 		return (data->n_heredoc);
-	data->pip = malloc(sizeof(int *) * (data->n_heredoc + 1));
+	if (data->n_heredoc > 16)
+		ft_free_all("bash: maximum here-document count exceeded", 2);
+	data->pip = ft_calloc(data->n_heredoc + 1, sizeof(int *));
 	if (!data->pip)
 		ft_free_all("error in alloc pip \n", 1);
 	data->pip[data->n_heredoc] = NULL;
@@ -277,6 +272,7 @@ void ft_heredoc()
 	if (ft_init_heredoc_pip() == 0)
 		return;
 	ft_write_in_pipes(data->command);
+	printf("+++++++++++ { HEREDOC } +++++++++++++++++++++++\n");
 	// ft_print_pip_content();
 }
 
@@ -466,7 +462,7 @@ void ft_execute_builtin_parent(t_command *cmd)
 	if (ft_strcmp(cmd->value, "cd") == 0)
 		ft_cd(cmd->args);
 	else if (ft_strcmp(cmd->value, "exit") == 0)
-		ft_exit();
+		ft_exit(cmd->args);
 	else if (ft_strcmp(cmd->value, "unset") == 0)
 	{
 		while (cmd->args[++i])
@@ -483,6 +479,8 @@ void ft_execute_builtin_parent(t_command *cmd)
 
 void ft_execute_cmd(t_command *cmd)
 {
+	signal(SIGINT, ft_sig_handler_child);
+	signal(SIGQUIT, ft_sig_handler_child);
 	if (ft_return_next_cmd(cmd) != NULL)
 		if (dup2(data->pipe_line[1], STDOUT_FILENO) == -1)
 			ft_free_all("error in dup2 red_out in child\n", 1);
@@ -493,19 +491,23 @@ void ft_execute_cmd(t_command *cmd)
 	ft_close_free_heredoc_pipes();
 	if (ft_check_is_builtin_child(cmd) == 1)
 		ft_execute_builtin_child(cmd);
-	data->path = fetch_path_of_cmd(data->new_env, cmd->value);
-	if (!data->path)
+	if (cmd && cmd->type == CMD)
 	{
-		perror(cmd->value);
-		ft_free_all(NULL, 127);
+		data->path = fetch_path_of_cmd(data->new_env, cmd->value);
+		if (!data->path)
+		{
+			perror(cmd->value);
+			ft_free_all(NULL, 127);
+		}
 	}
 	ft_check_path(data->path);
 	if (cmd && cmd->type == CMD)
 	{
 		data->exec_env = ft_get_env_in_tab();
 		execve(data->path, cmd->args, data->exec_env);
+		ft_free_all("error in execve() in child \n", 1);
 	}
-	ft_free_all("error in execve() in child\n", 1);
+	ft_free_all(NULL, 0);
 }
 
 void ft_execution()
@@ -515,11 +517,9 @@ void ft_execution()
 
 	data->save_stdin = dup(STDIN_FILENO);
 	data->save_stdout = dup(STDOUT_FILENO);
-	ft_heredoc();
 	data->i_pip = 0;
 	cmd = data->command;
 	data->n_cmd = ft_numbers_of_cmd(data->command);
-	printf("c_cmd : %d\n", data->n_cmd);
 	data->i = 0;
 	while (cmd && data->i <= data->n_cmd)
 	{
@@ -532,7 +532,7 @@ void ft_execution()
 				data->pid = -1;
 			ft_execute_builtin_parent(cmd_index);
 		}
-		else if (cmd_index)
+		else if (cmd)
 		{
 			data->pid = fork();
 			if (data->pid == -1)
@@ -577,4 +577,5 @@ void ft_execution()
 //	-----------------------------------------------------------------------
 //
 //	need to check empty command like : ls | "" |pwd
+//	need to handel if i use >> a need to create a 
 //  expand on heredoc

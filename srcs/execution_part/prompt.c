@@ -110,7 +110,6 @@ char    *ft_prompt()
         ft_init_username();
     if (data->prompt)
         free(data->prompt);
-    printf("user :%s| host:%s\n", data->username, data->hostname);
-    data->prompt = ft_creat_prompt("┌──(", '@', ")-[",  "]\n└─$ ");
+    data->prompt = ft_creat_prompt("\n┌──(", '@', ")-[",  "]\n└─$ ");
     return (data->prompt);
 } 

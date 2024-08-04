@@ -96,7 +96,7 @@ char    **ft_get_env_in_tab()
     i = 0;
     while (next)
     {
-        tab[i++] = next->value;
+        tab[i++] = ft_strdup(next->value);
         next = next->next;
     }
     tab[i] = NULL;
@@ -130,7 +130,7 @@ void    ft_print_export()
     data->i = 0;
     while (tab[data->i])
         printf("declare -x %s\n", tab[data->i++]);
-    free(tab);
+    ft_free_tab(tab);
 }
 
 
