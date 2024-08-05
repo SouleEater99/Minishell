@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/29 14:32:56 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/01 10:20:56 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/08/05 15:52:02 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -464,28 +464,6 @@ t_parser *fill_parse_struct(t_tools *tools)
     }
 
     // Print the parser linked list for testing
-    current_parser = pars;
-    while (current_parser)
-    {
-        printf("str: %s type: %d args: || addr %p", current_parser->str, current_parser->type, current_parser->str);
-        if (current_parser->args)
-        {
-            char **arg = current_parser->args;
-            while (*arg)
-            {
-                printf("\"%s || %p\" ", *arg, *arg);
-                arg++;
-            }
-        }
-        else
-        {
-            printf("empty ");
-        }
-        printf(" --> ");
-        
-        current_parser = current_parser->next;
-    }
-    printf("NULL\n");
     return (pars);
 }
 
@@ -538,6 +516,33 @@ int		synatx_err(t_tools *tools)
 		token = token->next;
 	}
 	return (1);
+}
+void print_parser(t_parser *pars)
+{
+	t_parser *current_parser;
+	
+	current_parser = pars;
+    while (current_parser)
+    {
+        printf("str: %s type: %d args: || addr %p", current_parser->str, current_parser->type, current_parser->str);
+        if (current_parser->args)
+        {
+            char **arg = current_parser->args;
+            while (*arg)
+            {
+                printf("\"%s || %p\" ", *arg, *arg);
+                arg++;
+            }
+        }
+        else
+        {
+            printf("empty ");
+        }
+        printf(" --> ");
+        
+        current_parser = current_parser->next;
+    }
+    printf("NULL\n");
 }
 
 // +++++++++++++++++++++++++++++ { from here i started to merge} ++++++++++++++++++++++++++++++++++++
@@ -655,13 +660,14 @@ void    ft_final_result(char *line)
         current_token = current_token->next;
     }
 	t_parser *pars;
-
-	printf("**********expand**********\n");
-	printf("\n%s\n", expand_str("$12USER$HOME+OMAR", tools->env));
-	printf("\n**************************\n");
+	// printf("**********expand**********\n");
+	// printf("before: \'\'try\'\' after: \n%s\n", rm_quotes("\'\'try\'\'"));
+	// printf("\n**************************\n");
 	if (data->syn_err == 1)
 	{
 		pars = fill_parse_struct(tools);
+		expension(pars, tools);
+		print_parser(pars);
 		ft_replace_our_struct(pars);
 		free_parser_list(pars);
 	}

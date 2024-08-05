@@ -224,15 +224,14 @@ void ft_write_in_pipes(t_command *cmd)
 {
 	char *line;
 
+	signal(SIGINT, ft_sig_handler_child);
 	data->i_pip = 0;
 	while (cmd)
 	{
 		if (cmd->type == HEREDOC)
 		{
 			line = readline("> ");
-			if (!line)
-				ft_free_all("error in readline write_to_pip\n", 1);
-			while (!line || ft_strcmp(line, cmd->args[1]) != 0)
+			while (line && ft_strcmp(line, cmd->args[1]) != 0)
 			{
 				if (line)
 				{
@@ -246,6 +245,7 @@ void ft_write_in_pipes(t_command *cmd)
 		}
 		cmd = cmd->next;
 	}
+	ft_free_all(NULL, 0);
 }
 
 void ft_print_pip_content()
@@ -267,12 +267,43 @@ void ft_print_pip_content()
 	}
 }
 
+void exit_fork(int status)
+{
+	int pid;
+
+	pid = fork();
+	if (pid == 0)
+		exit(status);
+	wait(&status);
+	printf("+++++++++++++ { before => status : %d } ++++++++++++++++\n", status);
+	int status1 = WEXITSTATUS(status);
+	printf("+++++++++++++ {  weexitstatus : %d } ++++++++++++++++\n", status1);
+	status1 = WIFEXITED(status);
+	printf("+++++++++++++ {  wifexed: %d } ++++++++++++++++\n", status1);
+	status1 = WIFSIGNALED(status);
+	printf("+++++++++++++ {  wifsgnaled : %d } ++++++++++++++++\n", status1);
+	printf("+++++++++++ { HEREDOC } +++++++++++++++++++++++\n");
+}
+
 void ft_heredoc()
 {
+	int	pid;
+	int status;
+
 	if (ft_init_heredoc_pip() == 0)
 		return;
-	ft_write_in_pipes(data->command);
-	printf("+++++++++++ { HEREDOC } +++++++++++++++++++++++\n");
+	pid = fork();
+	if (pid < 0)
+		ft_free_all("Fork Error in heredoc\n", 2);
+	if (pid == 0)
+		ft_write_in_pipes(data->command);
+	wait(&status);
+	status = WEXITSTATUS(status);
+	if (status == 130)
+	{
+		ft_free_utils();
+		data->command = NULL;
+	}
 	// ft_print_pip_content();
 }
 
@@ -358,13 +389,30 @@ int check_cmd_is_path(char *cmd)
 	return (0);
 }
 
+int	is_a_directory(char *path)
+{
+	struct stat path_stat;
+	unsigned int flag;
+
+	flag = 0;
+	if (stat(path, &path_stat) == -1)
+		return (0);
+	flag = path_stat.st_mode;
+	return (S_ISDIR(flag));
+}
+
 void ft_check_path(char *path)
 {
 	if (!path)
 		return;
 	if (access(path, F_OK) == 0)
 	{
-		if (access(path, X_OK) != 0)
+		if (is_a_directory(path) == 1)
+		{
+			ft_putstr_fd(path, 2);
+			ft_free_all(": Is a directory\n", 126);
+		}
+		else if (access(path, X_OK) != 0)
 		{
 			perror(path);
 			ft_free_all(NULL, 126);
@@ -409,6 +457,10 @@ int ft_check_is_builtin_child(t_command *cmd)
 		return (1);
 	if (ft_strcmp(cmd->value, "env") == 0 || ft_strcmp(cmd->value, "export") == 0)
 		return (1);
+	if (ft_strcmp(cmd->value, "exit") == 0 || ft_strcmp(cmd->value, "unset") == 0)
+		return (1);
+	if (ft_strcmp(cmd->value, "cd") == 0)
+		return (1);
 	return (0);
 }
 
@@ -436,7 +488,13 @@ void ft_execute_builtin_child(t_command *cmd)
 	int i;
 
 	i = 0;
-	if (ft_strcmp(cmd->value, "env") == 0)
+	if (ft_strcmp(cmd->value, "unset") == 0)
+		ft_unset(cmd->args);
+	else if (ft_strcmp(cmd->value, "exit") == 0)
+		ft_exit(cmd->args);
+	else if (ft_strcmp(cmd->value, "cd") == 0)
+		ft_cd(cmd->args);
+	else if (ft_strcmp(cmd->value, "env") == 0)
 		ft_env();
 	else if (ft_strcmp(cmd->value, "pwd") == 0)
 		ft_pwd();
@@ -464,10 +522,7 @@ void ft_execute_builtin_parent(t_command *cmd)
 	else if (ft_strcmp(cmd->value, "exit") == 0)
 		ft_exit(cmd->args);
 	else if (ft_strcmp(cmd->value, "unset") == 0)
-	{
-		while (cmd->args[++i])
-			ft_unset(cmd->args[i]);
-	}
+		ft_unset(cmd->args);
 	else if (ft_strcmp(cmd->value, "export") == 0)
 	{
 		while (cmd->args[i])
@@ -496,8 +551,8 @@ void ft_execute_cmd(t_command *cmd)
 		data->path = fetch_path_of_cmd(data->new_env, cmd->value);
 		if (!data->path)
 		{
-			perror(cmd->value);
-			ft_free_all(NULL, 127);
+			ft_putstr_fd(cmd->value, 2);
+			ft_free_all(": command not found\n", 127);
 		}
 	}
 	ft_check_path(data->path);
@@ -526,7 +581,7 @@ void ft_execution()
 		if (pipe(data->pipe_line) == -1)
 			ft_free_all("error in open pipe_line \n", 1); // i need to close all pipe of here-doc if they exist.
 		cmd_index = ft_return_cmd_index(cmd);
-		if (cmd_index && ft_check_is_builtin_parent(cmd_index) == 1)
+		if (cmd_index && data->n_cmd == 0 && ft_check_is_builtin_parent(cmd_index) == 1)
 		{
 			if (ft_return_next_cmd(cmd) == NULL)
 				data->pid = -1;
@@ -571,11 +626,11 @@ void ft_execution()
 //	handle export and unset if i delete all env var and i want to create one whene it's NULL ---> DONE
 //  cd home and oldpwd -----> DONE
 //	still need to handle prompot too dynamic pwd and username and host -----> DONE
-//	check SHLVL if DELETE IF can increament again ------> DONE 
+//	check SHLVL if DELETE IF can increament again ------> DONE
 //	need to free all var i use when i finish every loop ===> DONE (90% maybe i forget something)
 //
 //	-----------------------------------------------------------------------
 //
 //	need to check empty command like : ls | "" |pwd
-//	need to handel if i use >> a need to create a 
+//	need to handel if i use >> a need to create a
 //  expand on heredoc

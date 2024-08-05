@@ -35,14 +35,14 @@ void ft_lst_del_env_node(t_env *to_del)
     free(to_del);
 }
 
-int ft_unset(char *var)
+int ft_unset_from_env(char *var)
 {
     t_env *head;
     t_env *tmp;
 
     if (!var || *var == '\0')
     {
-        return ((data->exit = 0), 0);
+        return (0);
     }
     head = data->new_env;
     while (head)
@@ -52,5 +52,17 @@ int ft_unset(char *var)
             ft_lst_del_env_node(head);
         head = tmp;
     }
+    return (0);
+}
+
+int ft_unset(char **args)
+{
+    int i;
+
+    i = 1;
+    if (!args)
+        return ((data->exit = 0), 0);
+    while (args[i])
+        ft_unset_from_env(args[i++]);
     return ((data->exit = 0), 0);
 }

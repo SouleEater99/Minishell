@@ -22,7 +22,8 @@
 # include <dirent.h>                                    // for directory handling
 # include <stdbool.h>                                   // for boolean vars
 # include <sys/types.h>                                 // 
-# include <sys/wait.h>                                  // for wating child process to terminate execution
+# include <sys/wait.h>                              // for wating child process to terminate execution
+#include <sys/stat.h>
 # include <readline/history.h>                  // readline GNU library
 # include <readline/readline.h>                 // readline GNU library
 # include "./lib_ft/libft.h"
@@ -123,6 +124,14 @@ typedef struct s_data
 
 /************************************************/
 
+typedef struct s_var
+{
+	int	sq;
+	int	dq;
+	char	*newstr;
+	char *var;
+}	t_var;
+
 typedef struct s_parser
 {
     char *str;
@@ -176,7 +185,8 @@ void ft_pwd();
 int ft_exit(char **args);
 int ft_cd(char **arg);
 void ft_env();
-int ft_unset(char *var);
+int ft_unset_from_env(char *var);
+int ft_unset(char **args);
 int ft_export(char **arg);
 void ft_create_new_env();
 void ft_lst_add_back_env_node(t_env *next);
@@ -213,7 +223,24 @@ char **ft_copy_tab(char **arg, t_parser *pars, t_token *token);
 void	ft_sig_handler(int sig);
 void	ft_sig_handler_child(int sig);
 void	ft_print_to_nl(char *str);
+int	is_a_directory(char *path);
 
+
+
+
+
+
+
+/****************** parsing *****************/
+char	*expand_str(char *str, t_env *envp);
+char    *apend_char_str(char *str, char c);
+char	*ft_appand(char *var, char *newstr,t_env *envp);
+char	*add_to_str(char *str, t_var var, int *i);
+char	*rm_quotes(char *str);
+void expension(t_parser *parser, t_tools *tools);
+
+
+void exit_fork(int status);
 /******************execute******************/
 void    ft_print_prompt();
 

@@ -6,40 +6,11 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 08:52:55 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/01 10:17:19 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/08/05 15:50:40 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
-
-typedef struct s_var
-{
-	int	sq;
-	int	dq;
-	char	*newstr;
-	char *var;
-}	t_var;
-
-
-
-int	ft_isalnum(int c)
-{
-	if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))
-		return (1);
-	return (0);
-}
-int	ft_isalpha(int c)
-{
-	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-		return (1);
-	return (0);
-}
-int	ft_isdigit(int c)
-{
-	if (c >= 48 && c <= 57)
-		return (1);
-	return (0);
-}
 
 char    *apend_char_str(char *str, char c)
 {
@@ -96,39 +67,56 @@ char	*add_to_str(char *str, t_var var, int *i)
 	}
 	return (var.newstr);
 }
-char	*expand_str(char *str,t_env *envp)
+char	*expand_str(char *str, t_env *envp)
 {
-	int		i;
-	t_var	var;
+    int		i;
+    t_var	var;
 
-	i = 0;
-	var.sq = 1;
-	var.dq = 1;
-	var.newstr = NULL;
+    i = 0;
+    var.sq = 1;
+    var.dq = 1;
+    var.newstr = NULL;
 
-	while (str[i])
-	{
-		var.var = NULL;
-		if (str[i] == '\'' && var.dq == 1)
-			var.sq *= (-1);
-		else if (str[i] == '\"' && var.sq == 1)
-			var.dq *= (-1);
-		if (str[i] == '$' && str[i + 1] == '\0')
-			var.newstr = apend_char_str(var.newstr, str[i++]);
-		else if (str[i] == '$' && var.sq == 1 && ft_isalpha(str[i + 1]))
-		{
-			while (str[++i] && ft_isalnum(str[i]))
-				var.var = apend_char_str(var.var, str[i]);
-		}
-		else if (str[i] == '$' && ft_isdigit(str[i + 1]))
-			i += 2;
-		else if (str[i] != '\0')
-			var.newstr = add_to_str(str, var, &i);
-		if (var.var != NULL)
-			var.newstr = ft_appand(var.var, var.newstr,envp);
-	}
-	// free (str);
-	return (var.newstr);
+    while (str[i])
+    {
+        var.var = NULL;
+        if (str[i] == '\'' && var.dq == 1)
+            var.sq *= (-1);
+        else if (str[i] == '\"' && var.sq == 1)
+            var.dq *= (-1);
+        if (str[i] == '$' && str[i + 1] == '\0')
+            var.newstr = apend_char_str(var.newstr, str[i++]);
+        else if (str[i] == '$' && var.sq == 1)
+        {
+            if (str[i + 1] == '_')
+            {
+                var.var = apend_char_str(var.var, str[i + 1]);
+                i += 2;
+            }
+            // else if (str[i + 1] == '?')
+            // {
+            //     var.var = ft_itoa(data->exit);
+            //     i += 2;
+            // }
+            else if (ft_isalpha(str[i + 1]))
+            {
+                while (str[++i] && (ft_isalnum(str[i]) || str[i] == '_'))
+                    var.var = apend_char_str(var.var, str[i]);
+            }
+            else
+            {
+                var.newstr = apend_char_str(var.newstr, str[i++]);
+                continue;
+            }
+            var.newstr = ft_appand(var.var, var.newstr, envp);
+        }
+        else if (str[i] == '$' && ft_isdigit(str[i + 1]))
+            i += 2;
+        else if (str[i] != '\0')
+            var.newstr = add_to_str(str, var, &i);
+    }
+    free (str);
+    return (var.newstr);
 }
 
 char	*rm_quotes(char *str)
@@ -162,4 +150,35 @@ char	*rm_quotes(char *str)
 	}
 	free(str);
 	return (newstr);
+}
+
+void expension(t_parser *parser, t_tools *tools)
+{
+    t_parser *cur;
+    int i;
+
+    cur = parser;
+
+    while (cur)
+    {
+		if (cur->type == HEREDOC)
+			cur = cur->next;
+        if (cur && cur->str)
+        {
+            cur->str = expand_str(cur->str, tools->env);
+            cur->str = rm_quotes(cur->str);
+        }
+
+        if (cur && cur->args)
+        {
+            i = 0;
+            while (cur->args[i])
+            {
+                cur->args[i] = expand_str(cur->args[i], tools->env);
+                cur->args[i] = rm_quotes(cur->args[i]);
+                i++;
+            }
+        }
+        cur = cur->next;
+	}
 }
