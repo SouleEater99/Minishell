@@ -75,31 +75,41 @@ char    *ft_expand_var(char *var)
     return (next->value + i);
 }
 
+void    ft_free_pwd(char *new_path, char *old_path)
+{
+    if (old_path)
+        free(old_path);
+    if (new_path)
+        free(new_path);
+}
+
 int    ft_change_dir(char *path)
 {
     char    *var;
     char    *old_pwd;
     char    *new_pwd;
 
+    old_pwd = NULL;
+    new_pwd = NULL;
     old_pwd = getcwd(NULL, 0);
-    if (!old_pwd)
-        return (perror(path), -1);
     if (chdir(path) == -1)
-        return (perror(path), -1);
+        return (perror(path), ft_free_pwd(new_pwd, old_pwd), -1);
     new_pwd = getcwd(NULL, 0);
     if (!new_pwd)
-        return (perror(path), free(old_pwd), -1);
+        return (perror(path), ft_free_pwd(new_pwd, old_pwd), -1);
     var = ft_strjoin("PWD=", new_pwd);
     if (!var)
-        return (free(new_pwd), free(old_pwd), -1);
+        return (ft_free_pwd(new_pwd, old_pwd), -1);
     ft_add_or_update(var);
     free(var);
+    if (!old_pwd)
+        return (free(old_pwd), free(new_pwd), 0);
     var = ft_strjoin("OLDPWD=", old_pwd);
     if (!var)
-        return (free(new_pwd), free(old_pwd), -1);
+        return (ft_free_pwd(new_pwd, old_pwd), -1);
     ft_add_or_update(var);
     free(var);
-    return (free(old_pwd), free(new_pwd), 0);
+    return (free(new_pwd), free(old_pwd), 0);
 }
 
 

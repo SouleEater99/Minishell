@@ -728,7 +728,6 @@ void	ft_sig_handler_child(int sig)
 {
 	if (sig == SIGINT)
 	{
-		// ft_putstr_fd("++++++++++++++ { Terminated } ++++++++++++++++++++\n", 2);
 		ft_free_all(NULL, 130);
 	}
 	else if (sig == SIGQUIT)
@@ -782,21 +781,22 @@ int main(int ac, char** av, char** env)
 	ft_init_minishell(ac, av, env);
 	data->line = readline(ft_prompt());
 	if (!data->line)
-		return (0);
+		ft_free_all(NULL, data->exit);
+	signal(SIGINT, SIG_IGN);
 	ft_final_result(data->line);
 	print_list(data->command);
 	while (data->line)
 	{
-		signal(SIGINT, SIG_IGN);
 		ft_execution();
 		signal(SIGINT, ft_sig_handler);
 		ft_free_utils();
 		data->line = readline(ft_prompt());
 		if (data->line)
 		{
+			signal(SIGINT, SIG_IGN);
 			ft_final_result(data->line);
 			print_list(data->command);
 		}
 	}
-    ft_free_all(NULL, 0);
+	ft_free_all(NULL, data->exit);
 }

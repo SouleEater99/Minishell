@@ -104,8 +104,6 @@ typedef struct s_data
     t_token *token;
     char *path;
     pid_t pid;
-    char    *hostname;
-    char    *username;
     int **pip;
     char **tab;
     int pipe_line[2];
@@ -224,6 +222,7 @@ void	ft_sig_handler(int sig);
 void	ft_sig_handler_child(int sig);
 void	ft_print_to_nl(char *str);
 int	is_a_directory(char *path);
+void    ft_free_pwd(char *new_path, char *old_path);
 
 
 

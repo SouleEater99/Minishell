@@ -178,10 +178,6 @@ void ft_free_all(char *str, int status)
 			ft_free_tab(data->tab);
 		if (data->exec_env)
 			ft_free_tab(data->exec_env);
-		if (data->username)
-			free(data->username);
-		if (data->hostname)
-			free(data->hostname);
 		if (data->prompt)
 			free(data->prompt);
 		if (data->command)
@@ -230,7 +226,7 @@ void ft_write_in_pipes(t_command *cmd)
 	{
 		if (cmd->type == HEREDOC)
 		{
-			line = readline("> ");
+			line = expand_str(readline("> "), data->new_env);
 			while (line && ft_strcmp(line, cmd->args[1]) != 0)
 			{
 				if (line)
@@ -239,7 +235,7 @@ void ft_write_in_pipes(t_command *cmd)
 					write(data->pip[data->i_pip][1], "\n", 1);
 					free(line);
 				}
-				line = readline("> ");
+				line = expand_str(readline("> "), data->new_env);
 			}
 			data->i_pip++;
 		}

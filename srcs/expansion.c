@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 08:52:55 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/05 15:50:40 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/08/05 19:04:14 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,16 +162,19 @@ void expension(t_parser *parser, t_tools *tools)
     while (cur)
     {
 		if (cur->type == HEREDOC)
-			cur = cur->next;
-        if (cur && cur->str)
+        {
+            i = 1;
+            cur->args[i] = rm_quotes(cur->args[i]);
+        }
+        if (cur && cur->str && cur->type != HEREDOC)
         {
             cur->str = expand_str(cur->str, tools->env);
             cur->str = rm_quotes(cur->str);
         }
 
-        if (cur && cur->args)
+        if (cur && cur->args && cur->type != HEREDOC)
         {
-            i = 0;
+            i = 1;
             while (cur->args[i])
             {
                 cur->args[i] = expand_str(cur->args[i], tools->env);
