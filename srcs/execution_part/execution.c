@@ -332,18 +332,22 @@ void ft_setup_dup2(t_command *cmd)
 		}
 		else if (cmd->type == APPEND || cmd->type == TRUNC)
 		{
+			if (!cmd->args[1])
+				ft_free_all(": ambiguous redirect\n", 1);
 			if (cmd->type == APPEND)
 				fd = open(cmd->args[1], O_WRONLY | O_APPEND | O_CREAT, 0666);
 			else if (cmd->type == TRUNC)
 				fd = open(cmd->args[1], O_WRONLY | O_TRUNC | O_CREAT, 0666);
 			if (fd < 0)
-				ft_free_all("error in open file turnc or append\n", 1);
+				ft_free_all("\nerror in open file turnc or append\n", 1);
 			if (dup2(fd, STDOUT_FILENO) == -1)
 				ft_free_all("error in dup2 rederiction append|trunc\n", 1);
 			close(fd);
 		}
 		else if (cmd->type == INF)
 		{
+			if (!cmd->args[1])
+				ft_free_all(": ambiguous redirect\n", 1);
 			fd = open(cmd->args[1], O_RDONLY);
 			if (fd < 0)
 				ft_free_all("error in open file_read_in\n", 1);
