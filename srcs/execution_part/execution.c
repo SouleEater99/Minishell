@@ -449,13 +449,13 @@ int ft_check_is_builtin_child(t_command *cmd)
 {
 	if (!cmd)
 		return (-1);
-	if (ft_strcmp(cmd->value, "echo") == 0 || ft_strcmp(cmd->value, "pwd") == 0)
+	else if (ft_strcmp(cmd->value, "echo") == 0 || ft_strcmp(cmd->value, "pwd") == 0)
 		return (1);
-	if (ft_strcmp(cmd->value, "env") == 0 || ft_strcmp(cmd->value, "export") == 0)
+	else if (ft_strcmp(cmd->value, "env") == 0 || ft_strcmp(cmd->value, "export") == 0)
 		return (1);
-	if (ft_strcmp(cmd->value, "exit") == 0 || ft_strcmp(cmd->value, "unset") == 0)
+	else if (ft_strcmp(cmd->value, "exit") == 0 || ft_strcmp(cmd->value, "unset") == 0)
 		return (1);
-	if (ft_strcmp(cmd->value, "cd") == 0)
+	else if (ft_strcmp(cmd->value, "cd") == 0)
 		return (1);
 	return (0);
 }
@@ -506,6 +506,7 @@ void ft_execute_builtin_child(t_command *cmd)
 			ft_free_all(NULL, data->exit);
 		}
 	}
+	ft_free_all(NULL, data->exit);
 }
 
 void ft_execute_builtin_parent(t_command *cmd)

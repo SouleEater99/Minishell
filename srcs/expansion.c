@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 08:52:55 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/05 19:04:14 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/08/06 09:26:44 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,12 @@ char	*expand_str(char *str, t_env *envp)
 {
     int		i;
     t_var	var;
+    char    *exit_status_str;
 
     i = 0;
     var.sq = 1;
     var.dq = 1;
-    var.newstr = NULL;
+    var.newstr = ft_strdup("");  // Initialize with an empty string
 
     while (str[i])
     {
@@ -88,34 +89,32 @@ char	*expand_str(char *str, t_env *envp)
             var.newstr = apend_char_str(var.newstr, str[i++]);
         else if (str[i] == '$' && var.sq == 1)
         {
-            if (str[i + 1] == '_')
+            if (str[i + 1] == '?')
             {
-                var.var = apend_char_str(var.var, str[i + 1]);
+                exit_status_str = ft_itoa(data->exit);
+                printf("\n expension exit_status: %d\n", data->exit);
+                var.newstr = ft_strjoin(var.newstr, exit_status_str);
+                free(exit_status_str);
                 i += 2;
             }
-            // else if (str[i + 1] == '?')
-            // {
-            //     var.var = ft_itoa(data->exit);
-            //     i += 2;
-            // }
-            else if (ft_isalpha(str[i + 1]))
+            else if (str[i + 1] == '_' || ft_isalpha(str[i + 1]))
             {
-                while (str[++i] && (ft_isalnum(str[i]) || str[i] == '_'))
-                    var.var = apend_char_str(var.var, str[i]);
+                i++;  // Skip the $
+                while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+                    var.var = apend_char_str(var.var, str[i++]);
+                var.newstr = ft_appand(var.var, var.newstr, envp);
             }
             else
             {
                 var.newstr = apend_char_str(var.newstr, str[i++]);
-                continue;
             }
-            var.newstr = ft_appand(var.var, var.newstr, envp);
         }
         else if (str[i] == '$' && ft_isdigit(str[i + 1]))
             i += 2;
-        else if (str[i] != '\0')
-            var.newstr = add_to_str(str, var, &i);
+        else
+            var.newstr = apend_char_str(var.newstr, str[i++]);
     }
-    free (str);
+    free(str);
     return (var.newstr);
 }
 
