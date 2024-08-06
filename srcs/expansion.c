@@ -76,8 +76,9 @@ char	*expand_str(char *str, t_env *envp)
     i = 0;
     var.sq = 1;
     var.dq = 1;
+    if (!str)
+        return (NULL);
     var.newstr = ft_strdup("");  // Initialize with an empty string
-
     while (str[i])
     {
         var.var = NULL;

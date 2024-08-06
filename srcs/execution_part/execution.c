@@ -241,6 +241,7 @@ void ft_write_in_pipes(t_command *cmd)
 		}
 		cmd = cmd->next;
 	}
+    ft_putstr_fd("++++++++++++++++++++++++++\n",2);
 	ft_free_all(NULL, 0);
 }
 
