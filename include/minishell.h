@@ -224,10 +224,23 @@ void	ft_print_to_nl(char *str);
 int	is_a_directory(char *path);
 void    ft_free_pwd(char *new_path, char *old_path);
 
+void	ft_add_back_cmd(t_command *command);
+t_command *ft_copy_pars_to_cmd(t_parser *pars);
+void	ft_replace_our_struct(t_parser *pars);
+void print_banner();
+void	ft_init_minishell(int ac, char **av, char **env);
+void exit_fork(int status);
+int check_cmd_is_path(char *cmd);
 
 
 
 
+
+/****************** -----{ print_list }------ *****************/
+
+void print_type(int type);
+void print_args(char **args);
+void print_list(t_command *table);
 
 
 /****************** parsing *****************/
