@@ -1,9 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_str_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/07 17:09:26 by ael-maim          #+#    #+#             */
+/*   Updated: 2024/08/07 17:09:29 by ael-maim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-
-size_t ft_strlen_delimiter(const char *str)
+size_t	ft_strlen_delimiter(const char *str)
 {
-	size_t i;
+	size_t	i;
 
 	i = 0;
 	while (str[i] && str[i] != ' ' && str[i] != '	')
@@ -11,11 +22,11 @@ size_t ft_strlen_delimiter(const char *str)
 	return (i);
 }
 
-char *ft_strjoin_path(char const *s1, char const *s2, char c)
+char	*ft_strjoin_path(char const *s1, char const *s2, char c)
 {
-	size_t i;
-	size_t s1_len;
-	char *d;
+	size_t	i;
+	size_t	s1_len;
+	char	*d;
 
 	if (!s1 || !s2)
 		return (NULL);
@@ -37,7 +48,7 @@ char *ft_strjoin_path(char const *s1, char const *s2, char c)
 	return (d);
 }
 
-int ft_strcmp(char *s1, char *s2)
+int	ft_strcmp(char *s1, char *s2)
 {
 	if (!s1 || !s2)
 		return (-1);
@@ -49,4 +60,16 @@ int ft_strcmp(char *s1, char *s2)
 		s2++;
 	}
 	return (*s1 - *s2);
+}
+
+int	ft_tab_lenght(char **tab)
+{
+	int	i;
+
+	i = 0;
+	if (!tab)
+		return (0);
+	while (tab[i])
+		i++;
+	return (i);
 }

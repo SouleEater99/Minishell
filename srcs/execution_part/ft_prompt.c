@@ -1,4 +1,16 @@
-# include "../../include/minishell.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_prompt.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/07 17:08:52 by ael-maim          #+#    #+#             */
+/*   Updated: 2024/08/07 17:08:55 by ael-maim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../../include/minishell.h"
 
 // void    ft_init_hostname()
 // {
@@ -8,9 +20,9 @@
 //     fd = open("/etc/hostname", O_RDONLY);
 //     if (fd < 0)
 //         return ;
-//     data->hostname = get_next_line(fd);
+//     g_data->hostname = get_next_line(fd);
 //     close (fd);
-//     tmp = ft_strchr(data->hostname, '\n');
+//     tmp = ft_strchr(g_data->hostname, '\n');
 //     if (tmp)
 //         *tmp = '\0';
 // }
@@ -21,7 +33,7 @@
 //     char    *path;
 //     char    *tmp;
 //     int     fd;
-    
+
 //     current_pid = fork();
 //     if (current_pid == 0)
 //         ft_free_all(NULL, 0);
@@ -69,40 +81,43 @@
 //     tab = ft_split(line, ':');
 //     if (!tab)
 //         return (close(fd), free(line), free(uid), 0);
-//     data->username = ft_strdup(tab[0]);
+//     g_data->username = ft_strdup(tab[0]);
 //     return (ft_free_tab(tab), free(uid), free(line), 0);
 // }
 
-char    *ft_creat_prompt(char *str1, char c, char *str2, char *str3)
+char	*ft_creat_prompt(char *str1, char c, char *str2, char *str3)
 {
-    char *tmp;
-    char   *pwd;
-    char *prompt;
+	char	*tmp;
+	char	*pwd;
+	char	*prompt;
 
-    tmp = ft_strjoin(str1, "ael-maim");
-    prompt = ft_strjoin_path(tmp, "kali", c);
-    free (tmp);
-    tmp = ft_strjoin(prompt, str2);
-    free (prompt);
-    pwd = getcwd(NULL,0);
-    if (!pwd)
-        prompt = ft_strjoin(tmp, "...");
-    else
-    {
-        prompt = ft_strjoin(tmp, pwd);
-        free(pwd);
-    }
-    free(tmp);
-    tmp = prompt;
-    prompt = ft_strjoin(tmp, str3);
-    free(tmp);
-    return (prompt);
+	tmp = ft_strjoin(str1, "ael-maim");
+	prompt = ft_strjoin_path(tmp, "kali", c);
+	free(tmp);
+	tmp = ft_strjoin(prompt, str2);
+	free(prompt);
+	pwd = getcwd(NULL, 0);
+	if (!pwd)
+		prompt = ft_strjoin(tmp, "...");
+	else
+	{
+		prompt = ft_strjoin(tmp, pwd);
+		free(pwd);
+	}
+	free(tmp);
+	tmp = prompt;
+	prompt = ft_strjoin(tmp, str3);
+	free(tmp);
+	return (prompt);
 }
 
-char    *ft_prompt()
+char	*ft_prompt(int flag)
 {
-    if (data->prompt)
-        free(data->prompt);
-    data->prompt = ft_creat_prompt("\n┌──(", '@', ")-[",  "]\n└─$ ");
-    return (data->prompt);
-} 
+	if (g_data->prompt)
+		free(g_data->prompt);
+	if (flag == 1)
+		g_data->prompt = ft_creat_prompt("┌──(", '@', ")-[", "]\n└─$ ");
+	else
+		g_data->prompt = ft_creat_prompt("\n┌──(", '@', ")-[", "]\n└─$ ");
+	return (g_data->prompt);
+}

@@ -1,142 +1,115 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_built_in.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/07 17:06:59 by ael-maim          #+#    #+#             */
+/*   Updated: 2024/08/07 17:07:03 by ael-maim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-int ft_echo(char **arg)
+int	ft_is_switch(char *str, char *switches)
 {
-    int nl_flag;
-    int i;
-    int number_of_arg;
+	int i;
+	int	j;
 
-    number_of_arg = 0;
-    i = 1;
-    nl_flag = 0;
-    if (!arg || !arg[1] )
-        return (printf("\n"),ft_free_all(NULL, 1) , 0);
-    while (arg[number_of_arg])
-        number_of_arg++;
-    if (arg[1] && ft_strcmp("-n", arg[1]) == 0)
-        nl_flag = 1;
-    if (number_of_arg == 1 && nl_flag == 1)
-        return (ft_free_all(NULL, 0) ,0);
-    if (nl_flag == 1)
-        i = 2;
-    while (arg[i])
-    {
-        printf("%s", arg[i]);
-        if (i++ < number_of_arg - 1)
-            printf(" ");
-    }
-    if (nl_flag == 0)
-        printf("\n");
-    return (ft_free_all(NULL, 0), 0);
+	i = 0;
+	if (!str || !switches)
+		return (0);
+	if (str[i] == '-')
+		i++;
+	while (str[i])
+	{
+		j = 0;
+		while (switches[j])
+			if (switches[j++] != str[i])
+				return (-1);
+		i++;
+	}
+	return (1);
 }
 
-void    ft_pwd()
+int	ft_echo(char **arg)
 {
-    char *pwd;
+	int	nl_flag;
+	int	i;
+	int	number_of_arg;
 
-    pwd = getcwd(NULL, 0);
-    if (!pwd)
-        ft_free_all("error in allocation of pwd\n", 1);
-    printf("%s\n", pwd);
-    free(pwd);
-    ft_free_all (NULL, 0);
+	i = 1;
+	nl_flag = 0;
+	if (!arg || !arg[1])
+		return (write (1, "\n", 2), ft_free_all(NULL, 0), 0);
+	number_of_arg = ft_tab_lenght(arg);
+	if (arg[1] && ft_is_switch(arg[1], "n") == 1)
+		nl_flag = 1;
+	if (number_of_arg == 1 && nl_flag == 1)
+		return (ft_free_all(NULL, 0), 0);
+	if (nl_flag == 1)
+		i = 2;
+	while (arg[i])
+	{
+		ft_putstr_fd(arg[i], 1);
+		if (i++ < number_of_arg - 1)
+			write(1, " ", 2);
+	}
+	if (nl_flag == 0)
+		write(1, "\n", 2);
+	return (ft_free_all(NULL, 0), 0);
 }
 
-int ft_exit(char **args)
+void	ft_pwd(void)
 {
-    int i;
-    unsigned char c;
+	char	*pwd;
 
-    i = 0;
-    if (!args || !args[1])
-        ft_free_all(NULL, 0);
-    while (args[i])
-        i++;
-    if (i > 2)
-        return ((data->exit = 2), ft_putstr_fd("bash: exit: too many arguments\n", 2), 0);
-    c = ft_atoi(args[1]);
-    ft_free_all(NULL, c);
-    return (0);
+	pwd = getcwd(NULL, 0);
+	if (!pwd)
+		ft_free_all("error in allocation of pwd\n", 1);
+	printf("%s\n", pwd);
+	free(pwd);
+	ft_free_all(NULL, 0);
 }
 
-char    *ft_expand_var(char *var)
+void	ft_check_exit_arg(char **args)
 {
-    t_env *next;
-    int i;
+	int i;
 
-    if (!var)
-        return (NULL);
-    next = data->new_env;
-    while (next && ft_check_env_var(next->value, var) != 0)
-        next = next->next;
-    if (!next)
-        return (NULL);
-    i = ft_strlen(var) + 1;
-    return (next->value + i);
+	i = 0;
+	while (args[1][i])
+	{
+		if (args[1][i] < '0' || args[1][i] > '9')
+		{
+			ft_putstr_fd(args[1], 2);
+			g_data->exit = 2;
+			ft_free_all(": numeric argument required\n", 2);
+		}
+		i++;
+	}
+	if (i > 19)
+	{
+		ft_putstr_fd(args[1], 2);
+		g_data->exit = 2;
+		ft_free_all(": numeric argument required\n", 2);
+	}
 }
 
-void    ft_free_pwd(char *new_path, char *old_path)
+int	ft_exit(char **args)
 {
-    if (old_path)
-        free(old_path);
-    if (new_path)
-        free(new_path);
+	int				i;
+	unsigned char	c;
+
+	i = 0;
+	if (!args || !args[1])
+		ft_free_all(NULL, 0);
+	ft_check_exit_arg(args);
+	i = ft_tab_lenght(args);
+	if (i > 2)
+		return ((g_data->exit = 2),
+			ft_putstr_fd("bash: exit: too many arguments\n", 2), 0);
+	c = ft_atoi(args[1]);
+	ft_free_all(NULL, c);
+	return (0);
 }
-
-int    ft_change_dir(char *path)
-{
-    char    *var;
-    char    *old_pwd;
-    char    *new_pwd;
-
-    old_pwd = NULL;
-    new_pwd = NULL;
-    old_pwd = getcwd(NULL, 0);
-    if (chdir(path) == -1)
-        return (perror(path), ft_free_pwd(new_pwd, old_pwd), -1);
-    new_pwd = getcwd(NULL, 0);
-    if (!new_pwd)
-        return (perror(path), ft_free_pwd(new_pwd, old_pwd), -1);
-    var = ft_strjoin("PWD=", new_pwd);
-    if (!var)
-        return (ft_free_pwd(new_pwd, old_pwd), -1);
-    ft_add_or_update(var);
-    free(var);
-    if (!old_pwd)
-        return (free(old_pwd), free(new_pwd), 0);
-    var = ft_strjoin("OLDPWD=", old_pwd);
-    if (!var)
-        return (ft_free_pwd(new_pwd, old_pwd), -1);
-    ft_add_or_update(var);
-    free(var);
-    return (free(new_pwd), free(old_pwd), 0);
-}
-
-
-int ft_cd(char **arg)
-{
-    int n_arg;
-    char    *path;
-
-
-    n_arg = 0;
-    while (arg[n_arg])
-        n_arg++;
-    if (n_arg > 2)
-        return (ft_putstr_fd("bash: cd: too many arguments\n", 2), (data->exit = 1), 0);
-    else if (n_arg == 1)
-    {
-        path = ft_expand_var("HOME");
-        if (!path)
-            return ((data->exit = 0),ft_putstr_fd("bash: cd: HOME not set", 2), 0);
-        if (ft_change_dir(path) == -1)
-            return (-1);
-    }
-    else if (n_arg == 2)
-        if (ft_change_dir(arg[1]) == -1)
-            return ((data->exit = 1), -1);
-    // i need to handle cd - on OLDPWD in env;
-    // and cd  which let you go to home; ---> done
-    return ((data->exit = 0), 0);
-}
-

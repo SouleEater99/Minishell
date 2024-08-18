@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_free.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/07 17:08:15 by ael-maim          #+#    #+#             */
+/*   Updated: 2024/08/07 17:08:16 by ael-maim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-void ft_free_tab(char **tab)
+void	ft_free_tab(char **tab)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	if (tab)
@@ -13,32 +25,32 @@ void ft_free_tab(char **tab)
 	}
 }
 
-void ft_close_free_heredoc_pipes()
+void	ft_close_free_heredoc_pipes(void)
 {
-	int i;
+	int	i;
 
 	i = 0;
-	if (data->pip)
+	if (g_data->pip)
 	{
-		while (data->pip[i])
+		while (g_data->pip[i])
 		{
-			close(data->pip[i][0]);
-			close(data->pip[i++][1]);
+			close(g_data->pip[i][0]);
+			close(g_data->pip[i++][1]);
 		}
 		i = 0;
-		while (i < data->n_heredoc)
-			free(data->pip[i++]);
-		free(data->pip);
-		data->pip = NULL;
+		while (i < g_data->n_heredoc)
+			free(g_data->pip[i++]);
+		free(g_data->pip);
+		g_data->pip = NULL;
 	}
 }
 
-void ft_lst_free_env()
+void	ft_lst_free_env(void)
 {
-	t_env *head;
-	t_env *tmp;
+	t_env	*head;
+	t_env	*tmp;
 
-	head = data->new_env;
+	head = g_data->new_env;
 	while (head)
 	{
 		tmp = head->next;
@@ -50,75 +62,39 @@ void ft_lst_free_env()
 
 void	ft_free_command(t_command *cmd)
 {
-	t_command *tmp;
+	t_command	*tmp;
 
 	while (cmd)
 	{
 		tmp = cmd->next;
-		free(cmd->value); // i don't need to free it cause it's address come from cmd->args
+		free(cmd->value);
 		ft_free_tab(cmd->args);
 		free(cmd);
 		cmd = tmp;
 	}
 }
 
-
-void	ft_free_utils()
+void	ft_free_all(char *str, int status)
 {
-	if (data)
+	if (g_data)
 	{
-		data->i = 0;
-		if (data->pip)
-			ft_close_free_heredoc_pipes(data->pip);
-		if (data->path)
-		{
-			free(data->path);
-			data->path = NULL;
-		}
-		if (data->tab)
-		{
-			ft_free_tab(data->tab);
-			data->tab = NULL;
-		}
-		if (data->exec_env)
-		{
-			ft_free_tab(data->exec_env);
-			data->exec_env = NULL;
-		}
-		if (data->prompt)
-		{
-			free(data->prompt);
-			data->prompt = NULL;
-		}
-		if (data->command)
-		{
-		 	ft_free_command(data->command);
-			data->command = NULL;
-		}
-	}
-}
-
-void ft_free_all(char *str, int status)
-{
-	if (data)
-	{
-		data->i = 0;
+		g_data->i = 0;
 		ft_putstr_fd(str, 2);
-		if (data->pip)
-			ft_close_free_heredoc_pipes(data->pip);
-		if (data->new_env)
+		if (g_data->pip)
+			ft_close_free_heredoc_pipes();
+		if (g_data->new_env)
 			ft_lst_free_env();
-		if (data->path)
-			free(data->path);
-		if (data->tab)
-			ft_free_tab(data->tab);
-		if (data->exec_env)
-			ft_free_tab(data->exec_env);
-		if (data->prompt)
-			free(data->prompt);
-		if (data->command)
-		 	ft_free_command(data->command);
-		free(data);
+		if (g_data->path)
+			free(g_data->path);
+		if (g_data->tab)
+			ft_free_tab(g_data->tab);
+		if (g_data->exec_env)
+			ft_free_tab(g_data->exec_env);
+		if (g_data->prompt)
+			free(g_data->prompt);
+		if (g_data->command)
+			ft_free_command(g_data->command);
+		free(g_data);
 	}
 	exit(status);
 }
