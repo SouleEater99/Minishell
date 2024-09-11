@@ -17,7 +17,7 @@ int	check_cmd_is_path(char *cmd)
 	int	i;
 
 	i = 0;
-	if (!cmd)
+	if (!cmd || *cmd == '\0')
 		return (-1);
 	while (cmd[i])
 		if (cmd[i++] == '/')

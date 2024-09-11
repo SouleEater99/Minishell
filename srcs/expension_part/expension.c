@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:13:55 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/17 11:49:19 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 22:32:40 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,11 @@ char    *apend_char_str(char *str, char c)
     return (new);
 }
 
-char	*ft_appand(char *var, char *newstr,t_env *envp)
+char	*ft_appand(char *var, char *newstr)
 {
 	int		j;
 	char	*path;
     
-    (void)envp;
 	j = -1;
 	path = ft_expand_var(var);
 	free(var);
@@ -55,102 +54,134 @@ char	*ft_appand(char *var, char *newstr,t_env *envp)
 	return (newstr);
 }
 
-char	*add_to_str(char *str, t_var var, int *i)
+static void handle_dollar_sign(char *str,int flag, int *i, t_var *var)
 {
-	if (str[*i] == '$' && var.sq == 1 && var.dq == 1 && (str[*i
-			+ 1] == '\"' || str[*i + 1] == '\''))
-		*i += 1;
-	else
-	{
-		var.newstr = apend_char_str(var.newstr, str[*i]);
-		*i += 1;
-	}
-	return (var.newstr);
-}
-char	*expand_str(char *str, t_env *envp)
-{
-    int		i;
-    t_var	var;
-    char    *exit_status_str;
+    int x;
+    char *exit_status_str;
 
-    i = 0;
+    x = 0;
+    if (str[*i + 1] == '\0')
+        var->newstr = apend_char_str(var->newstr, str[(*i)++]);
+    else if (str[*i + 1] == '?')
+    {
+        exit_status_str = ft_itoa(g_data->exit);
+        while (exit_status_str[x])
+            var->var = apend_char_str(var->var, exit_status_str[x++]);
+        var->newstr = var->var;
+        free(exit_status_str);
+        *i += 2;
+    }
+    else if ((str[*i + 1] == '\'' || str[*i + 1] == '\"') && flag == 1)
+        (*i)++;
+    else if (str[*i + 1] == '_' || ft_isalpha(str[*i + 1]))
+    {
+        (*i)++;
+        while (str[*i] && (ft_isalnum(str[*i]) || str[*i] == '_'))
+            var->var = apend_char_str(var->var, str[(*i)++]);
+        var->newstr = ft_appand(var->var, var->newstr);
+    }
+    else
+        var->newstr = apend_char_str(var->newstr, str[(*i)++]);
+}
+
+static void process_char(char *str,int flag ,int *i, t_var *var)
+{
+    if (str[*i] == '\'' && var->dq == 1 && flag == 1)
+        var->sq *= (-1);
+    else if (str[*i] == '\"' && var->sq == 1)
+        var->dq *= (-1);
+    
+    if (str[*i] == '$' && var->sq == 1)
+        handle_dollar_sign(str, flag, i, var);
+    else if (str[*i] == '$' && ft_isdigit(str[*i + 1]))
+        *i += 2;
+    else
+        var->newstr = apend_char_str(var->newstr, str[(*i)++]);
+}
+
+char *expand_str(char *str,int flag)
+{
+    int i;
+    t_var var;
+
     var.sq = 1;
     var.dq = 1;
+    var.newstr = NULL;
+    var.var = NULL;
+    i = 0;
+
     if (!str)
         return (NULL);
-    var.newstr = ft_strdup("");  // Initialize with an empty string
+
     while (str[i])
     {
         var.var = NULL;
-        if (str[i] == '\'' && var.dq == 1)
-            var.sq *= (-1);
-        else if (str[i] == '\"' && var.sq == 1)
-            var.dq *= (-1);
-        if (str[i] == '$' && str[i + 1] == '\0')
-            var.newstr = apend_char_str(var.newstr, str[i++]);
-        else if (str[i] == '$' && var.sq == 1)
-        {
-            if (str[i + 1] == '?')
-            {
-                exit_status_str = ft_itoa(g_data->exit);
-                // printf("\n expension exit_status: %d\n", g_data->exit);
-                var.newstr = ft_strjoin(var.newstr, exit_status_str);
-                free(exit_status_str);
-                i += 2;
-            }
-            else if (str[i + 1] == '_' || ft_isalpha(str[i + 1]))
-            {
-                i++;  // Skip the $
-                while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
-                    var.var = apend_char_str(var.var, str[i++]);
-                var.newstr = ft_appand(var.var, var.newstr, envp);
-            }
-            else
-            {
-                var.newstr = apend_char_str(var.newstr, str[i++]);
-            }
-        }
-        else if (str[i] == '$' && ft_isdigit(str[i + 1]))
-            i += 2;
-        else
-            var.newstr = apend_char_str(var.newstr, str[i++]);
+        process_char(str, flag, &i, &var);
     }
+
+    if (!var.newstr)
+        var.newstr = ft_calloc(1, sizeof(char *));
+
     free(str);
     return (var.newstr);
 }
 
-void expension(t_parser *parser, t_tools *tools)
+static void process_token(t_token **token, t_token **cur, t_token **prev, t_token *next)
 {
-    t_parser *cur;
-    int i;
+    if (((*cur)->type == CMD || (*cur)->type == ARG) && (*cur)->input[0] == '\0')
+    {
+        if (*prev)
+            (*prev)->next = next;
+        else
+            *token = next;
 
-    cur = parser;
+        if (next)
+            next->prev = *prev;
+        free((*cur)->input);
+        free(*cur);
+        *cur = next;
+    }
+    else
+    {
+        *prev = *cur;
+        *cur = next;
+    }
+}
+
+void ignore_empty_cmd_arg(t_token **token)
+{
+    t_token *cur;
+    t_token *next;
+    t_token *prev;
+    
+    if (!token || !*token)
+        return;
+
+    cur = *token;
+    prev = NULL;
 
     while (cur)
     {
-		if (cur->type == HEREDOC)
-        {
-            i = 1;
-            cur->args[i] = rm_quotes(cur->args[i]);
-        }
-        if (cur && cur->str && cur->type != HEREDOC)
-        {
-            cur->str = expand_str(cur->str, tools->env);
-            cur->str = rm_quotes(cur->str);
-        }
+        next = cur->next;
+        process_token(token, &cur, &prev, next);
+    }
+    get_tokens_type(*token, 0);
+}
 
-        if (cur && cur->args && cur->type != HEREDOC)
-        {
-            i = 1;
-            while (cur->args[i])
-            {
-                cur->args[i] = expand_str(cur->args[i], tools->env);
-                cur->args[i] = rm_quotes(cur->args[i]);
-                i++;
-            }
-        }
+void    expension(t_token *token)
+{
+    t_token *cur;
+    
+    cur = token;
+    while (cur)
+    {
+        if (cur->prev && (cur->type == FILENAME && cur->prev->type == HEREDOC))
+            ;
+        else
+            cur->input = expand_str(cur->input, 1);
         cur = cur->next;
-	}
+    }
+    
 }
 
 int     heredoc_quotes(char *line)
@@ -188,7 +219,7 @@ void    expand_flag(t_parser *parser)
     {
         if (cur && cur->type == HEREDOC)
         {
-            quote_status = heredoc_quotes(cur->args[1]);
+            quote_status = heredoc_quotes(cur->args[0]);
             
             if (quote_status == 4 || quote_status == 6)
             {
@@ -196,7 +227,7 @@ void    expand_flag(t_parser *parser)
             }
             else if(quote_status == 1 || quote_status == 2)
             {
-                
+                //syntax error open quotes
             }
         }
         cur = cur->next;

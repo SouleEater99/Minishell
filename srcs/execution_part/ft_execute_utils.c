@@ -53,11 +53,14 @@ char	*fetch_path_of_cmd(t_env *env, char *cmd)
 	i = 0;
 	if (check_cmd_is_path(cmd) == 1)
 		return (ft_check_path(g_data->path), ft_strdup(cmd));
+	else if (check_cmd_is_path(cmd) == -1)
+		return (ft_putstr_fd(cmd, 2),
+			ft_free_all(": command not found\n", 127), NULL);
 	while (env && ft_strnstr(env->value, "PATH=", 6) == NULL)
 		env = env->next;
 	if (!env)
 		return (ft_strjoin("./", cmd));
-	g_data->tab = ft_split(env->value + 6, ':');
+	g_data->tab = ft_split(env->value + 5, ':');
 	if (!g_data->tab)
 		ft_free_all("error in split in fetch path\n", 1);
 	while (g_data->tab[i])

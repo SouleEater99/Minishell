@@ -36,6 +36,8 @@ void	ft_execute_builtin_parent(t_command *cmd)
 	int	i;
 
 	i = 0;
+	close(g_data->pipe_line[0]);
+	ft_setup_dup2(cmd);
 	if (ft_strcmp(cmd->value, "cd") == 0)
 		ft_cd(cmd->args);
 	else if (ft_strcmp(cmd->value, "exit") == 0)
@@ -60,6 +62,17 @@ void	ft_inti_execution(void)
 	g_data->i = 0;
 }
 
+void		ft_get_next_pip(t_command *cmd)
+{
+	while (cmd && cmd->type != PIPE)
+	{
+		if (cmd->type == HEREDOC)
+			g_data->i_pip++;
+		cmd = cmd->next;
+	}
+
+}
+
 void	ft_setup_execution(t_command *cmd, t_command *cmd_index)
 {
 	if (cmd_index && g_data->n_cmd == 0
@@ -68,6 +81,8 @@ void	ft_setup_execution(t_command *cmd, t_command *cmd_index)
 		if (ft_return_next_cmd(cmd) == NULL)
 			g_data->pid = -1;
 		ft_execute_builtin_parent(cmd_index);
+		close(g_data->pipe_line[1]);
+		return ;
 	}
 	else if (cmd && cmd->value)
 	{
@@ -76,12 +91,47 @@ void	ft_setup_execution(t_command *cmd, t_command *cmd_index)
 			ft_free_all("error in creating child process \n", 1);
 		if (g_data->pid == 0)
 			ft_execute_cmd(cmd);
+		ft_get_next_pip(cmd);
 	}
 	if (dup2(g_data->pipe_line[0], STDIN_FILENO) == -1)
 		ft_free_all("error in open pipe_line in parent", 1);
 	close(g_data->pipe_line[0]);
 	close(g_data->pipe_line[1]);
 }
+
+char	*ft_get_env_last_cmd(t_command *last)
+{
+	char	*line;
+	char	**tab;
+	int		i;
+
+	i = 0;
+	tab = last->args;
+	while (tab[i] && tab[i + 1])
+		i++;
+	line = ft_strjoin("_=",tab[i]);
+	return (line);
+}
+
+void	ft_update_env_last_cmd()
+{
+	t_command	*cmd;
+	t_command	*last_cmd;
+	t_env		*next;
+	char		*line;
+
+	cmd = g_data->command;
+	while (cmd)
+	{
+		if (cmd->type == CMD)
+			last_cmd = cmd;
+		cmd = cmd->next;
+	}
+	line = ft_get_env_last_cmd(last_cmd);
+	ft_add_or_update(line);
+	free(line);
+}
+
 
 void	ft_execution(void)
 {
@@ -90,6 +140,7 @@ void	ft_execution(void)
 
 	ft_inti_execution();
 	cmd = g_data->command;
+	printf("########### { n_cmd : %d } ###########\n",g_data->n_cmd);
 	while (cmd && g_data->i <= g_data->n_cmd)
 	{
 		if (pipe(g_data->pipe_line) == -1)
@@ -99,10 +150,14 @@ void	ft_execution(void)
 		cmd = ft_return_next_cmd(cmd);
 		g_data->i++;
 	}
+	ft_update_env_last_cmd();
 	ft_close_free_heredoc_pipes();
+	if (dup2(g_data->save_stdout, STDOUT_FILENO) == -1)
+		ft_free_all("error in dup2 of save stdout\n", 1);
 	if (dup2(g_data->save_stdin, STDIN_FILENO) == -1)
 		ft_free_all("error in dup2 of save stdin\n", 1);
-	if (g_data->pid != -1)
+	printf("++++++++++ { Syntax error : %d } ++++++++++++\n", g_data->syn_err);
+	if (g_data->syn_err ==  1 && g_data->pid != -1)
 	{
 		waitpid(g_data->pid, &g_data->exit, 0);
 		g_data->exit = WEXITSTATUS(g_data->exit);

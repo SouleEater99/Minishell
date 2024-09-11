@@ -60,6 +60,18 @@ int	ft_echo(char **arg)
 		write(1, "\n", 2);
 	return (ft_free_all(NULL, 0), 0);
 }
+void	get_pwd_from_env()
+{
+	char *pwd;
+
+	pwd = ft_expand_var("PWD");
+	if (pwd)
+	{
+		printf("%s\n", pwd);
+		ft_free_all(NULL, 1);
+	}
+	ft_free_all("This location have no  path\n", 1);
+}
 
 void	ft_pwd(void)
 {
@@ -67,7 +79,7 @@ void	ft_pwd(void)
 
 	pwd = getcwd(NULL, 0);
 	if (!pwd)
-		ft_free_all("error in allocation of pwd\n", 1);
+		get_pwd_from_env();
 	printf("%s\n", pwd);
 	free(pwd);
 	ft_free_all(NULL, 0);
@@ -78,6 +90,10 @@ void	ft_check_exit_arg(char **args)
 	int i;
 
 	i = 0;
+	while (args[1][i] && (args[1][i] == ' ' || args[1][i] == '	'))
+		i++;
+	if (args[1][i] == '+' || args[1][i] == '-')
+		i++;
 	while (args[1][i])
 	{
 		if (args[1][i] < '0' || args[1][i] > '9')

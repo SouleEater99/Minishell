@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/29 14:32:52 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/17 11:52:41 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 22:32:48 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 # define MAGENTA "\x1B[35m"
 # define CYAN "\x1B[36m"
 
-# define EMPTY 0
+# define FILENAME 0
 # define CMD 1
 # define ARG 2
 # define TRUNC 3
@@ -68,6 +68,7 @@ typedef struct s_token
 {
 	char				*input;
 	int					type;
+	char				**args;
 	struct s_token		*prev;
 	struct s_token		*next;
 }						t_token;
@@ -111,6 +112,15 @@ typedef struct s_var
 	char				*var;
 }						t_var;
 
+typedef struct s_vars
+{
+    int        n;
+    int        i;
+    int        dblqt;
+    int        j;
+    int        sinqt;
+}						t_vars;
+
 typedef struct s_parser
 {
 	char				*str;
@@ -128,7 +138,6 @@ typedef struct s_tools
 
 }						t_tools;
 
-char					*expand_str(char *str, t_env *envp);
 
 extern t_data	*g_data;
 
@@ -156,16 +165,20 @@ void					line_args(t_tools *mini);
 void					get_tokens_type(t_token *token, int sep);
 t_token					*next_token(char *line, int *i);
 t_token					*get_tokens(char *line);
+void					split_token_input(t_token *token);
 
 /***********************expension***************/
 char					*apend_char_str(char *str, char c);
-char					*ft_appand(char *var, char *newstr, t_env *envp);
+char					*ft_appand(char *var, char *newstr);
 char					*add_to_str(char *str, t_var var, int *i);
-char					*expand_str(char *str, t_env *envp);
-void					expension(t_parser *parser, t_tools *tools);
+char					*expand_str(char *str,int flag);
+void					ignore_empty_cmd_arg(t_token **token);
+void					expension(t_token *token);
 int						quotes(char *line, int index);
 char					*rm_quotes(char *str);
 void					expand_flag(t_parser *parser);
+void					del_q(t_parser *parse);
+char					**ft_split_it(char *str);
 
 // execution
 
@@ -251,6 +264,14 @@ void					setup_dup2_readout(int fd, t_command *cmd);
 void					setup_dup2_readin(int fd, t_command *cmd);
 void					ft_check_exit_arg(char **args);
 int						ft_is_switch(char *str, char *switches);
+void					ft_print_qoutes(char *str);
+char					*ft_replace_and_join(char *value,char *var);
+char					*ft_update_identifier(char *identifier, char *var);
+int						ft_check_equal_env(char *value);
+void					get_pwd_from_env();
+void					ft_get_next_pip(t_command *cmd);
+char					*ft_get_env_last_cmd(t_command *last);
+void					ft_update_env_last_cmd();
 
 /****************** -----{ print_list }------ *****************/
 
@@ -260,5 +281,9 @@ void					print_list(t_command *table);
 
 /******************execute******************/
 void					ft_print_prompt(void);
+
+void	get_file_types(t_token * token);
+void	check_cmd(t_token *token);
+int	count_args(t_token *start);
 
 #endif

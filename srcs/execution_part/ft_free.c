@@ -67,7 +67,8 @@ void	ft_free_command(t_command *cmd)
 	while (cmd)
 	{
 		tmp = cmd->next;
-		free(cmd->value);
+		if (cmd->value)
+			free(cmd->value);
 		ft_free_tab(cmd->args);
 		free(cmd);
 		cmd = tmp;

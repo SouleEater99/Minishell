@@ -14,17 +14,18 @@
 
 void	setup_dup2_readout(int fd, t_command *cmd)
 {
-	if (!cmd->args[1])
+	if (!cmd->args[0])
 		ft_free_all(": ambiguous redirect\n", 1);
 	if (cmd->type == APPEND)
-		fd = open(cmd->args[1], O_WRONLY | O_APPEND | O_CREAT, 0666);
+		fd = open(cmd->args[0], O_WRONLY | O_APPEND | O_CREAT, 0666);
 	else if (cmd->type == TRUNC)
-		fd = open(cmd->args[1], O_WRONLY | O_TRUNC | O_CREAT, 0666);
+		fd = open(cmd->args[0], O_WRONLY | O_TRUNC | O_CREAT, 0666);
 	if (fd < 0)
 	{
-		perror(cmd->args[1]);
+		perror(cmd->args[0]);
 		ft_free_all(NULL, 0);
 	}
+	printf("++++++++++++ { type: %d } ++++++++++++++\n", cmd->type);
 	if (dup2(fd, STDOUT_FILENO) == -1)
 		ft_free_all("error in dup2 rederiction append|trunc\n", 1);
 	close(fd);
@@ -32,12 +33,12 @@ void	setup_dup2_readout(int fd, t_command *cmd)
 
 void	setup_dup2_readin(int fd, t_command *cmd)
 {
-	if (!cmd->args[1])
+	if (!cmd->args[0])
 		ft_free_all(": ambiguous redirect\n", 1);
-	fd = open(cmd->args[1], O_RDONLY);
+	fd = open(cmd->args[0], O_RDONLY);
 	if (fd < 0)
 	{
-		perror(cmd->args[1]);
+		perror(cmd->args[0]);
 		ft_free_all(NULL, 1);
 	}
 	if (dup2(fd, STDIN_FILENO) == -1)
@@ -57,6 +58,8 @@ void	ft_setup_dup2(t_command *cmd)
 	{
 		if (cmd->type == HEREDOC)
 		{
+			printf("+++++++++++++++ { value : %s |  } ++++++++++++++++\n", cmd->args[0]);
+			printf("+++++++++++++++ { I_pip : %d } ++++++++++++++++\n", g_data->i_pip);
 			if (dup2(g_data->pip[g_data->i_pip++][0], STDIN_FILENO) == -1)
 				ft_free_all("error in dup2 heredoc\n", 1);
 		}

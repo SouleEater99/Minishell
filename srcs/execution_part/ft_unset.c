@@ -23,7 +23,7 @@ int	ft_check_env_var(char *env, char *var)
 			break ;
 		i++;
 	}
-	if (!var[i] && env[i] == '=')
+	if (!var[i] && (env[i] == '=' || !env[i]))
 		return (0);
 	return (-1);
 }

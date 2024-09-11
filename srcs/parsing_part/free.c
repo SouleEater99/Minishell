@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 10:58:13 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/15 11:07:20 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 21:54:10 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,22 @@ void	*ft_memdel(void *ptr)
 void	free_token_list(t_token *token)
 {
 	t_token	*next;
+	int		i;
 
 	while (token)
 	{
 		next = token->next;
 		free(token->input);
+		if (token->args)
+		{
+			i = 0;
+			while (token->args[i])
+			{
+				free(token->args[i]);
+				i++;
+			}
+			free(token->args);
+		}
 		free(token);
 		token = next;
 	}

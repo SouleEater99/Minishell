@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_heredoc.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 17:08:24 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/08/07 17:08:26 by ael-maim         ###   ########.fr       */
+/*   Updated: 2024/09/08 22:35:50 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ int	ft_init_heredoc_pip(void)
 	g_data->n_heredoc = ft_check_heredoc(g_data->command);
 	if (g_data->n_heredoc <= 0)
 		return (g_data->n_heredoc);
-	if (g_data->n_heredoc > 16)
-		ft_free_all("bash: maximum here-document count exceeded", 2);
 	g_data->pip = ft_calloc(g_data->n_heredoc + 1, sizeof(int *));
 	if (!g_data->pip)
 		ft_free_all("error in alloc pip \n", 1);
@@ -65,10 +63,11 @@ void	ft_write_in_pipes(t_command *cmd)
 		if (cmd->type == HEREDOC)
 		{
 			line = readline("> ");
-			if (cmd->index == -1)
-				line = expand_str(line , g_data->new_env);
-			while (line && ft_strcmp(line, cmd->args[1]) != 0)
+			printf("########### { line : %s } ################\n", line);
+			while (line && ft_strcmp(line, cmd->args[0]) != 0)
 			{
+				if (cmd->index == -1)
+					line = expand_str(line , 0);
 				if (line)
 				{
 					write(g_data->pip[g_data->i_pip][1], line, ft_strlen(line));
@@ -76,9 +75,9 @@ void	ft_write_in_pipes(t_command *cmd)
 					free(line);
 				}
 				line = readline("> ");
-				if (cmd->index == -1)
-					line = expand_str(line , g_data->new_env);
 			}
+			if (line)
+				free (line);
 			g_data->i_pip++;
 		}
 		cmd = cmd->next;

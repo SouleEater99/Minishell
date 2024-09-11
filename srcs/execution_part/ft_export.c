@@ -31,6 +31,24 @@ char	**ft_get_env_in_tab(void)
 	return (tab);
 }
 
+void	ft_print_qoutes(char *str)
+{
+	write (1, "declare -x ", 12);
+	while (*str)
+	{
+		write (1, str, 1);
+		if (*str++ == '=')
+			break;
+	}
+	if (*str)
+	{
+		ft_putchar_fd('"', 1);
+		ft_putstr_fd(str, 1);
+		ft_putchar_fd('"', 1);
+	}
+	ft_putstr_fd("\n", 1);
+}
+
 void	ft_print_export(void)
 {
 	char	**tab;
@@ -56,7 +74,7 @@ void	ft_print_export(void)
 	}
 	g_data->i = 0;
 	while (tab[g_data->i])
-		printf("declare -x %s\n", tab[g_data->i++]);
+		ft_print_qoutes(tab[g_data->i++]);
 	ft_free_tab(tab);
 }
 
@@ -65,6 +83,7 @@ int	ft_export(char **arg)
 	static unsigned int	i;
 	int					n;
 
+	i++;
 	if (arg)
 		n = ft_tab_lenght(arg);
 	if (!arg || !arg[1] || n == 1)
@@ -80,9 +99,8 @@ int	ft_export(char **arg)
 			ft_putstr_fd("export: has not a valid identifier\n", 2);
 			g_data->exit = 1;
 		}
-		else if (ft_check_export_arg(arg[i]) == 1)
+		else if (ft_check_export_arg(arg[i]) > 0)
 			ft_add_or_update(arg[i]);
-		i++;
 		ft_export(arg);
 	}
 	i = 0;

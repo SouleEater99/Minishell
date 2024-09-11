@@ -51,8 +51,8 @@ void	ft_create_minimal_env(void)
 	char	*tmp;
 
 	g_data->new_env = ft_lst_create_env_node("SHLVL=1");
-	next = ft_lst_create_env_node("PATH=/bin:/usr/local/bin:/usr/bin:/sbin");
-	ft_lst_add_back_env_node(next);
+	// next = ft_lst_create_env_node("PATH=/bin:/usr/local/bin:/usr/bin:/sbin");
+	// ft_lst_add_back_env_node(next);
 	pwd = getcwd(NULL, 0);
 	if (pwd)
 	{
@@ -92,6 +92,16 @@ void	ft_create_new_env(void)
 	}
 }
 
+int		ft_check_equal_env(char *value)
+{
+	if (!value) 
+		return (-1);
+	while (*value)
+		if (*value++ == '=')
+			return (1);
+	return (0);
+}
+
 void	ft_env(void)
 {
 	t_env	*env;
@@ -99,7 +109,8 @@ void	ft_env(void)
 	env = g_data->new_env;
 	while (env)
 	{
-		printf("%s\n", env->value);
+		if (ft_check_equal_env(env->value) == 1)
+			printf("%s\n", env->value);
 		env = env->next;
 	}
 	ft_free_all(NULL, 0);

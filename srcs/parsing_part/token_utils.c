@@ -6,22 +6,20 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 10:58:18 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/15 11:06:56 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 22:10:44 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-
-
 void	ft_skip_space(const char *str, int *i)
 {
-	while ((str[*i] == ' ' || str[*i] == '\t')
-	|| (str[*i] == '\r' || str[*i] == '\v' || str[*i] == '\f'))
+	while ((str[*i] == ' ' || str[*i] == '\t') || (str[*i] == '\r'
+			|| str[*i] == '\v' || str[*i] == '\f'))
 		(*i)++;
 }
 
-int		ignore_sep(char *line, int i)
+int	ignore_sep(char *line, int i)
 {
 	if (line[i] && line[i] == '\\' && line[i + 1] && line[i + 1] == ';')
 		return (1);
@@ -30,10 +28,10 @@ int		ignore_sep(char *line, int i)
 	else if (line[i] && line[i] == '\\' && line[i + 1] && line[i + 1] == '>')
 		return (1);
 	else if (line[i] && line[i] == '\\' && line[i + 1] && line[i + 1] == '>'
-				&& line[i + 2] && line[i + 2] == '>')
+		&& line[i + 2] && line[i + 2] == '>')
 		return (1);
 	else if (line[i] && line[i] == '\\' && line[i + 1] && line[i + 1] == '<'
-				&& line[i + 2] && line[i + 2] == '<')
+		&& line[i + 2] && line[i + 2] == '<')
 		return (1);
 	return (0);
 }
@@ -46,7 +44,8 @@ t_token	*prev_sep(t_token *token, int skip)
 		token = token->prev;
 	return (token);
 }
-int		is_type(t_token *token, int type)
+
+int	is_type(t_token *token, int type)
 {
 	if (token && token->type == type)
 		return (1);
@@ -54,7 +53,7 @@ int		is_type(t_token *token, int type)
 		return (0);
 }
 
-int		is_last_valid_arg(t_token *token)
+int	is_last_valid_arg(t_token *token)
 {
 	t_token	*prev;
 

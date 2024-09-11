@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:01:26 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/17 18:32:19 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 21:53:46 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,35 @@ char	*allocate_line(char *line)
 // {
 // }
 
+static void	process_char(char *line, char *new, int *i, int *j)
+{
+	if (quotes(line, *i) != 2 && line[*i] == '$')
+	{
+		while (line[*i] == '$')
+		{
+			new[(*j)++] = line[(*i)++];
+		}
+	}
+	else if (quotes(line, *i) == 0 && line[*i] == '|')
+	{
+		new[(*j)++] = ' ';
+		new[(*j)++] = line[(*i)++];
+		new[(*j)++] = ' ';
+	}
+	else if (quotes(line, *i) == 0 && is_sep(line, *i))
+	{
+		new[(*j)++] = ' ';
+		new[(*j)++] = line[(*i)++];
+		if (quotes(line, *i) == 0 && line[*i] == '>')
+			new[(*j)++] = line[(*i)++];
+		if (quotes(line, *i) == 0 && line[*i] == '<')
+			new[(*j)++] = line[(*i)++];
+		new[(*j)++] = ' ';
+	}
+	else
+		new[(*j)++] = line[(*i)++];
+}
+
 char	*formate_line(char *line)
 {
 	char	*new;
@@ -79,32 +108,7 @@ char	*formate_line(char *line)
 	new = allocate_line(line);
 	while (new && line[i])
 	{
-		if (quotes(line, i) != 2 && line[i] == '$')
-		{
-			// Handle consecutive dollar signs
-			while (line[i] == '$')
-			{
-				new[j++] = line[i++];
-			}
-		}
-		else if (quotes(line, i) == 0 && line[i] == '|')
-		{
-			new[j++] = ' ';
-			new[j++] = line[i++];
-			new[j++] = ' ';
-		}
-		else if (quotes(line, i) == 0 && is_sep(line, i))
-		{
-			new[j++] = ' ';
-			new[j++] = line[i++];
-			if (quotes(line, i) == 0 && line[i] == '>')
-				new[j++] = line[i++];
-			if (quotes(line, i) == 0 && line[i] == '<')
-				new[j++] = line[i++];
-			new[j++] = ' ';
-		}
-		else
-			new[j++] = line[i++];
+		process_char(line, new, &i, &j);
 	}
 	new[j] = '\0';
 	ft_memdel(line);

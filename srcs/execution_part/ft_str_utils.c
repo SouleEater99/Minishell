@@ -12,16 +12,6 @@
 
 #include "../../include/minishell.h"
 
-size_t	ft_strlen_delimiter(const char *str)
-{
-	size_t	i;
-
-	i = 0;
-	while (str[i] && str[i] != ' ' && str[i] != '	')
-		i++;
-	return (i);
-}
-
 char	*ft_strjoin_path(char const *s1, char const *s2, char c)
 {
 	size_t	i;
@@ -31,7 +21,7 @@ char	*ft_strjoin_path(char const *s1, char const *s2, char c)
 	if (!s1 || !s2)
 		return (NULL);
 	s1_len = ft_strlen(s1) + 1;
-	d = (char *)malloc(s1_len + ft_strlen_delimiter(s2) + 1);
+	d = (char *)malloc(s1_len + ft_strlen(s2) + 1);
 	if (d == NULL)
 		return (NULL);
 	i = -1;
@@ -39,7 +29,7 @@ char	*ft_strjoin_path(char const *s1, char const *s2, char c)
 		d[i] = s1[i];
 	d[i] = c;
 	i = 0;
-	while (s2[i] && s2[i] != ' ' && s2[i] != '	')
+	while (s2[i])
 	{
 		d[s1_len + i] = s2[i];
 		i++;

@@ -6,11 +6,55 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:09:10 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/08/15 12:28:05 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/08 21:57:20 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
+
+int	count_args(t_token *start)
+{
+	t_token	*token;
+	int		count;
+	int		i;
+
+	count = 1;
+	if (!start)
+		return (-1);
+	token = start;
+	if (is_type(token, PIPE) && token->next)
+		token = token->next;
+	while (token && !is_type(token, PIPE))
+	{
+		if (token->type == CMD || token->type == ARG)
+		{
+			i = 0;
+			while (token->args && token->args[i++])
+				count++;
+		}
+		token = token->next;
+	}
+	return (count);
+}
+
+static int	process_cmd_arg_token(char **tab, int *i, t_token *token)
+{
+	int	j;
+
+	j = 0;
+	if (token->type == CMD || token->type == ARG)
+	{
+		while (token->args && token->args[j])
+		{
+			tab[*i] = ft_strdup(token->args[j]);
+			if (!tab[*i])
+				return (0);
+			(*i)++;
+			j++;
+		}
+	}
+	return (1);
+}
 
 char	**line_tab(t_token *start)
 {
@@ -18,74 +62,112 @@ char	**line_tab(t_token *start)
 	char	**tab;
 	int		i;
 
-	if (!start)
+	i = count_args(start);
+	if (!start || i == -1)
 		return (NULL);
-	token = start->next;
-	i = 2;
-	while (token && token->type < TRUNC)
-	{
+	token = start;
+	if (is_type(token, PIPE) && token->next)
 		token = token->next;
-		i++;
-	}
-	if (!(tab = malloc(sizeof(char *) * i)))
+	tab = malloc(sizeof(char *) * i);
+	if (!tab)
 		return (NULL);
-	token = start->next;
-	tab[0] = ft_strdup(start->input);
-	i = 1;
-	while (token && token->type < TRUNC)
+	i = 0;
+	while (token && token->type != PIPE)
 	{
-		tab[i++] = ft_strdup(token->input);
+		process_cmd_arg_token(tab, &i, token);
 		token = token->next;
 	}
 	tab[i] = NULL;
 	return (tab);
 }
 
-t_parser *fill_parse_struct(t_tools *tools)
+static int	process_token(t_parser *node, t_token *token)
 {
-    t_parser *pars = NULL;
-    t_parser *current_parser = NULL;
-    t_token *token = tools->cmd;
-	
-	if (token && token->type == ARG)
-		token->type = CMD;
-    while (token)
-    {
-		if (!pars)
-        {
-            pars = malloc(sizeof(t_parser));
-            current_parser = pars;
-        }
-        else
-        {
-            current_parser->next = malloc(sizeof(t_parser));
-            current_parser = current_parser->next;
-        }
-        // Set the values for the current parser node
-		if (token && token->type != ARG)
+	if (is_type(token, PIPE))
+	{
+		node->str = ft_strdup(token->input);
+		node->type = token->type;
+	}
+	else if (is_types(token, "TAIH"))
+	{
+		node->str = ft_strdup(token->input);
+		node->type = token->type;
+		if (token->next && token->next->type == FILENAME)
 		{
-			current_parser->str = ft_strdup(token->input);
-			current_parser->type = token->type;
-			if (token->type != PIPE)
-				current_parser->args = line_tab(token);
-			current_parser->index = -1;
-			current_parser->next = NULL;
+			node->args = malloc(sizeof(char *) * 2);
+			if (!node->args)
+				return (0);
+			node->args[0] = ft_strdup(token->next->input);
+			node->args[1] = NULL;
 		}
+	}
+	return (1);
+}
 
-		if (!token || token->next == NULL)
-            break; // Reached the end of the token linked list
-        if (is_type(token, PIPE))
-        {
-            current_parser->args = NULL;
-        }
-		if (is_types(token, "TAIH"))
+static t_parser	*create_parser_node(t_token *token)
+{
+	t_parser	*node;
+
+	node = malloc(sizeof(t_parser));
+	if (!node)
+		return (NULL);
+	node->str = NULL;
+	node->type = -1;
+	node->args = NULL;
+	node->index = -1;
+	node->next = NULL;
+	if (!process_token(node, token))
+	{
+		free(node);
+		return (NULL);
+	}
+	return (node);
+}
+
+static void	process_cmd_arg(t_parser *node, t_token *token)
+{
+	if (is_type(token, CMD))
+	{
+		node->str = ft_strdup(token->input);
+		node->type = token->type;
+		node->args = line_tab(token);
+	}
+}
+
+static t_parser	*add_parser_node(t_parser **pars, t_parser **current_parser,
+		t_token *token)
+{
+	if (!*pars)
+	{
+		*pars = create_parser_node(token);
+		*current_parser = *pars;
+	}
+	else
+	{
+		(*current_parser)->next = create_parser_node(token);
+		*current_parser = (*current_parser)->next;
+	}
+	return (*current_parser);
+}
+
+t_parser	*fill_parse_struct(t_tools *tools)
+{
+	t_parser	*pars;
+	t_parser	*current_parser;
+	t_token		*token;
+
+	pars = NULL;
+	current_parser = NULL;
+	token = tools->cmd;
+	while (token)
+	{
+		current_parser = add_parser_node(&pars, &current_parser, token);
+		if (!current_parser)
+			return (NULL);
+		process_cmd_arg(current_parser, token);
+		while (token->next && (is_type(token->next, ARG)))
 			token = token->next;
-
-        token = token->next;
-		while (token && (token->type == ARG || token->type == EMPTY))
-			token = token->next;
-    }
-
-    // Print the parser linked list for testing
-    return (pars);
+		token = token->next;
+	}
+	return (pars);
 }
