@@ -1,32 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/10 12:47:59 by samsaafi          #+#    #+#             */
+/*   Updated: 2024/09/10 12:48:00 by samsaafi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
-
-// char	*ft_strchr(const char *s, int c)
-// {
-// 	int	i;
-
-// 	i = 0;
-// 	while (s[i] != c)
-// 	{
-// 		if (s[i] == '\0')
-// 			return (NULL);
-// 		i++;
-// 	}
-// 	return ((char *)s + i);
-// }
-
-// int ft_strcmp(char *s1, char *s2)
-// {
-//     if (!s1 || !s2)
-//         return (-1);
-//     while (*s1 && *s2)
-//     {
-//         if (*s1 != *s2)
-//             return (*s1 - *s2);
-//         s1++;
-//         s2++;
-//     }
-//     return (*s1 - *s2);
-// }
 
 void	ft_putstr_fd(char *s, int fd)
 {
@@ -41,6 +25,8 @@ char	*ft_strdup(const char *str)
 	char	*dup;
 
 	i = 0;
+	if (!str)
+		return (NULL);
 	while (str[i])
 		i++;
 	dup = (char *)malloc(i + 1);
@@ -58,12 +44,24 @@ char	*ft_strdup(const char *str)
 
 void	*ft_memset(void *str, int c, size_t n)
 {
-	size_t i;
-	unsigned char *s;
+	size_t			i;
+	unsigned char	*s;
 
 	i = 0;
 	s = (unsigned char *)str;
 	while (i < n)
 		s[i++] = (unsigned char)c;
 	return (str);
+}
+
+int	ft_check_export_plus(char *str, int i)
+{
+	if (str[i] == '+')
+	{
+		if (str[i] == '+' && str[i + 1] && str[i + 1] == '=')
+			return (2);
+		else
+			return (0);
+	}
+	return (1);
 }

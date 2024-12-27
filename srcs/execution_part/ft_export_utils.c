@@ -12,64 +12,29 @@
 
 #include "../../include/minishell.h"
 
-char	*ft_update_shlvl(char *str)
-{
-	int		num;
-	char	*tmp;
-	char	*tmp2;
-
-	if (!str)
-		return (NULL);
-	num = ft_atoi(str);
-	num++;
-	tmp = ft_itoa(num);
-	if (!tmp)
-		return (NULL);
-	tmp2 = ft_strjoin("SHLVL=", tmp);
-	free(tmp);
-	return (tmp2);
-}
-
-int	ft_calc_env(void)
-{
-	int		i;
-	t_env	*next;
-
-	i = 0;
-	next = g_data->new_env;
-	while (next)
-	{
-		next = next->next;
-		i++;
-	}
-	return (i);
-}
-
 int	ft_check_export_arg(char *str)
 {
 	int	i;
 
-	i = 0;
-	if (!str[i] || str[i] == '=' || !((str[i] >= 'A' && str[i] <= 'Z')
-			|| (str[i] >= 'a' && str[i] <= 'z')))
-		if (str[i] != '_')
+	i = -1;
+	if (!str[0] || str[0] == '=' || !((str[0] >= 'A' && str[0] <= 'Z')
+			|| (str[0] >= 'a' && str[0] <= 'z')))
+		if (str[0] != '_')
 			return (0);
-	while (str[i])
+	while (str[++i])
 	{
-		if (str[i] == '+')
-		{
-			if (str[i] == '+' && str[i  + 1] && str[i + 1] == '=')
-				return (2);
-			else
-				return (0);
-		}
+		if (ft_check_export_plus(str, i) == 0)
+			return (0);
+		else if (ft_check_export_plus(str, i) == 2)
+			return (2);
 		if (str[i] == '=')
 			return (1);
 		if (str[i] == ' ' || str[i] == '\t' || str[i] == '-')
 			return (0);
-		if (str[i] != '_' && !((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z')))
-			return (0);
-		i++;
+		if (str[i] != '_' && !((str[i] >= 'A' && str[i] <= 'Z')
+				|| (str[i] >= 'a' && str[i] <= 'z')))
+			if ((str[i] < '0' && str[i] > '9'))
+				return (0);
 	}
 	return (3);
 }
@@ -95,9 +60,9 @@ char	*ft_get_identifier(char *var)
 	return (new);
 }
 
-char	*ft_replace_and_join(char *value,char *var)
+char	*ft_replace_and_join(char *value, char *var)
 {
-	char *new;
+	char	*new;
 
 	new = NULL;
 	if (ft_check_export_arg(var) == 1 || ft_check_export_arg(var) == 3)
@@ -109,16 +74,16 @@ char	*ft_replace_and_join(char *value,char *var)
 	{
 		while (*var)
 			if (*var++ == '=')
-				break;
+				break ;
 		new = ft_strjoin(value, var);
 		free(value);
 	}
 	return (new);
 }
 
-char *ft_update_identifier(char *identifier, char *var)
+char	*ft_update_identifier(char *identifier, char *var)
 {
-	char *new;
+	char	*new;
 
 	if (!identifier || !var)
 		return (free(identifier), NULL);

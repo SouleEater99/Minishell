@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_setup_dup.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 18:32:32 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/08/07 18:32:34 by ael-maim         ###   ########.fr       */
+/*   Updated: 2024/09/10 09:56:33 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void	setup_dup2_readout(int fd, t_command *cmd)
 		perror(cmd->args[0]);
 		ft_free_all(NULL, 0);
 	}
-	printf("++++++++++++ { type: %d } ++++++++++++++\n", cmd->type);
 	if (dup2(fd, STDOUT_FILENO) == -1)
 		ft_free_all("error in dup2 rederiction append|trunc\n", 1);
 	close(fd);
@@ -58,8 +57,6 @@ void	ft_setup_dup2(t_command *cmd)
 	{
 		if (cmd->type == HEREDOC)
 		{
-			printf("+++++++++++++++ { value : %s |  } ++++++++++++++++\n", cmd->args[0]);
-			printf("+++++++++++++++ { I_pip : %d } ++++++++++++++++\n", g_data->i_pip);
 			if (dup2(g_data->pip[g_data->i_pip++][0], STDIN_FILENO) == -1)
 				ft_free_all("error in dup2 heredoc\n", 1);
 		}

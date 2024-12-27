@@ -12,57 +12,9 @@
 
 #include "../../include/minishell.h"
 
-int	ft_is_switch(char *str, char *switches)
+void	get_pwd_from_env(void)
 {
-	int i;
-	int	j;
-
-	i = 0;
-	if (!str || !switches)
-		return (0);
-	if (str[i] == '-')
-		i++;
-	while (str[i])
-	{
-		j = 0;
-		while (switches[j])
-			if (switches[j++] != str[i])
-				return (-1);
-		i++;
-	}
-	return (1);
-}
-
-int	ft_echo(char **arg)
-{
-	int	nl_flag;
-	int	i;
-	int	number_of_arg;
-
-	i = 1;
-	nl_flag = 0;
-	if (!arg || !arg[1])
-		return (write (1, "\n", 2), ft_free_all(NULL, 0), 0);
-	number_of_arg = ft_tab_lenght(arg);
-	if (arg[1] && ft_is_switch(arg[1], "n") == 1)
-		nl_flag = 1;
-	if (number_of_arg == 1 && nl_flag == 1)
-		return (ft_free_all(NULL, 0), 0);
-	if (nl_flag == 1)
-		i = 2;
-	while (arg[i])
-	{
-		ft_putstr_fd(arg[i], 1);
-		if (i++ < number_of_arg - 1)
-			write(1, " ", 2);
-	}
-	if (nl_flag == 0)
-		write(1, "\n", 2);
-	return (ft_free_all(NULL, 0), 0);
-}
-void	get_pwd_from_env()
-{
-	char *pwd;
+	char	*pwd;
 
 	pwd = ft_expand_var("PWD");
 	if (pwd)
@@ -87,7 +39,7 @@ void	ft_pwd(void)
 
 void	ft_check_exit_arg(char **args)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (args[1][i] && (args[1][i] == ' ' || args[1][i] == '	'))
@@ -104,7 +56,7 @@ void	ft_check_exit_arg(char **args)
 		}
 		i++;
 	}
-	if (i > 19)
+	if (i >= 16 && (ft_atoi(args[1]) == 0 || ft_atoi(args[1]) == -1))
 	{
 		ft_putstr_fd(args[1], 2);
 		g_data->exit = 2;
@@ -123,7 +75,7 @@ int	ft_exit(char **args)
 	ft_check_exit_arg(args);
 	i = ft_tab_lenght(args);
 	if (i > 2)
-		return ((g_data->exit = 2),
+		return ((g_data->exit = 1),
 			ft_putstr_fd("bash: exit: too many arguments\n", 2), 0);
 	c = ft_atoi(args[1]);
 	ft_free_all(NULL, c);

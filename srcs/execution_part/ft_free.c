@@ -96,6 +96,7 @@ void	ft_free_all(char *str, int status)
 		if (g_data->command)
 			ft_free_command(g_data->command);
 		free(g_data);
+		rl_clear_history();
 	}
 	exit(status);
 }

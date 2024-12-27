@@ -33,12 +33,12 @@ char	**ft_get_env_in_tab(void)
 
 void	ft_print_qoutes(char *str)
 {
-	write (1, "declare -x ", 12);
+	write(1, "declare -x ", 12);
 	while (*str)
 	{
-		write (1, str, 1);
+		write(1, str, 1);
 		if (*str++ == '=')
-			break;
+			break ;
 	}
 	if (*str)
 	{

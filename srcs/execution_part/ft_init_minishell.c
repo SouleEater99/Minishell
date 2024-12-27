@@ -12,26 +12,15 @@
 
 #include "../../include/minishell.h"
 
-// void print_banner()
-// {
-//     printf("\n");
-//     printf(CYAN   "        .---.         .-----------\n" RESET);
-//     printf(BLUE   "       /     \\  __  /    ------\n" RESET);
-//     printf(GREEN  "      / /     \\(  )/    -----\n" RESET);
-//     printf(YELLOW "     //////   ' \\/ `   ---      " MAGENTA " ███╗   ███╗██╗███╗   ██╗██╗\n" RESET);
-//     printf(RED    "    //// / // :    : ---       " MAGENTA " ████╗ ████║██║████╗  ██║██║\n" RESET);
-//     printf(MAGENTA"   // /   /  /`    '--         " CYAN   " ██╔████╔██║██║██╔██╗ ██║██║\n" RESET);
-//     printf(CYAN   "  //          //..\\\\          " BLUE   " ██║╚██╔╝██║██║██║╚██╗██║██║\n" RESET);
-//     printf(BLUE   "         ====UU====UU====      " GREEN  " ██║ ╚═╝ ██║██║██║ ╚████║███████╗\n" RESET);
-//     printf(GREEN  "             '//||\\\\`         " YELLOW " ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝\n" RESET);
-//     printf(YELLOW "               ''``            " RED    " ███████╗██╗  ██╗███████╗██╗     ██╗\n" RESET);
-//     printf(RED    "                               " MAGENTA " ██╔════╝██║  ██║██╔════╝██║     ██║\n" RESET);
-//     printf(MAGENTA"                               " CYAN   " ███████╗███████║█████╗  ██║     ██║\n" RESET);
-//     printf(CYAN   "                               " BLUE   " ╚════██║██╔══██║██╔══╝  ██║     ██║\n" RESET);
-//     printf(BLUE   "                               " GREEN  " ███████║██║  ██║███████╗███████╗███████╗\n" RESET);
-//     printf(GREEN  "                               " YELLOW " ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n" RESET);
-//     printf(YELLOW "\n          Welcome to Minishell - Version 24.07.31\n\n" RESET);
-// }
+void	ft_inti_execution(void)
+{
+	g_data->save_stdin = dup(STDIN_FILENO);
+	g_data->save_stdout = dup(STDOUT_FILENO);
+	g_data->i_pip = 0;
+	g_data->n_cmd = ft_numbers_of_cmd(g_data->command);
+	g_data->i = 0;
+	ft_update_env_last_cmd();
+}
 
 void	ft_init_minishell(int ac, char **av, char **env)
 {
@@ -41,8 +30,7 @@ void	ft_init_minishell(int ac, char **av, char **env)
 	}
 	signal(SIGINT, ft_sig_handler);
 	signal(SIGQUIT, SIG_IGN);
-	// print_banner();
-	g_data = malloc(sizeof(t_data)); // i need to use calloc instead of malloc
+	g_data = malloc(sizeof(t_data));
 	if (!g_data)
 		ft_free_all("error in alloc g_data\n", 1);
 	ft_bzero(g_data, sizeof(t_data));

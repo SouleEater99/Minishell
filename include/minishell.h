@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/29 14:32:52 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/09/08 22:32:48 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/10 12:19:24 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ typedef struct s_token
 	char				*input;
 	int					type;
 	char				**args;
+	int					expanded;
 	struct s_token		*prev;
 	struct s_token		*next;
 }						t_token;
@@ -114,12 +115,32 @@ typedef struct s_var
 
 typedef struct s_vars
 {
-    int        n;
-    int        i;
-    int        dblqt;
-    int        j;
-    int        sinqt;
+	int					n;
+	int					i;
+	int					dblqt;
+	int					j;
+	int					sinqt;
 }						t_vars;
+
+typedef struct s_quote_process
+{
+	int					i;
+	int					sinqot;
+	int					dobqot;
+	char				*newstr;
+	char				*str;
+}						t_quote_process;
+
+typedef struct s_process_data
+{
+	char				c;
+	int					j;
+}						t_process_data;
+typedef struct s_handle_dollar
+{
+	int					x;
+	char				*exit_status_str;
+}						t_process_dollar;
 
 typedef struct s_parser
 {
@@ -138,8 +159,7 @@ typedef struct s_tools
 
 }						t_tools;
 
-
-extern t_data	*g_data;
+extern t_data			*g_data;
 
 /******************parsing******************/
 void					exit_fork(int status);
@@ -166,12 +186,13 @@ void					get_tokens_type(t_token *token, int sep);
 t_token					*next_token(char *line, int *i);
 t_token					*get_tokens(char *line);
 void					split_token_input(t_token *token);
+void					ambigeous_file(t_token *token);
 
 /***********************expension***************/
 char					*apend_char_str(char *str, char c);
 char					*ft_appand(char *var, char *newstr);
 char					*add_to_str(char *str, t_var var, int *i);
-char					*expand_str(char *str,int flag);
+char					*expand_str(char *str, int flag);
 void					ignore_empty_cmd_arg(t_token **token);
 void					expension(t_token *token);
 int						quotes(char *line, int index);
@@ -188,7 +209,6 @@ void					ft_close_free_heredoc_pipes(void);
 void					ft_free_all(char *str, int status);
 int						ft_init_heredoc_pip(void);
 void					ft_write_in_pipes(t_command *cmd);
-void					ft_print_pip_content(void);
 void					ft_heredoc(void);
 int						ft_numbers_of_cmd(t_command *cmd);
 void					ft_setup_dup2(t_command *cmd);
@@ -265,13 +285,16 @@ void					setup_dup2_readin(int fd, t_command *cmd);
 void					ft_check_exit_arg(char **args);
 int						ft_is_switch(char *str, char *switches);
 void					ft_print_qoutes(char *str);
-char					*ft_replace_and_join(char *value,char *var);
+char					*ft_replace_and_join(char *value, char *var);
 char					*ft_update_identifier(char *identifier, char *var);
 int						ft_check_equal_env(char *value);
-void					get_pwd_from_env();
+void					get_pwd_from_env(void);
 void					ft_get_next_pip(t_command *cmd);
 char					*ft_get_env_last_cmd(t_command *last);
-void					ft_update_env_last_cmd();
+void					ft_update_env_last_cmd(void);
+void					ft_wait_child(void);
+void					ft_write_and_expand_pipe(t_command *cmd, char *line);
+int						ft_check_export_plus(char *str, int i);
 
 /****************** -----{ print_list }------ *****************/
 
@@ -282,8 +305,8 @@ void					print_list(t_command *table);
 /******************execute******************/
 void					ft_print_prompt(void);
 
-void	get_file_types(t_token * token);
-void	check_cmd(t_token *token);
-int	count_args(t_token *start);
+void					get_file_types(t_token *token);
+void					check_cmd(t_token *token);
+int						count_args(t_token *start);
 
 #endif

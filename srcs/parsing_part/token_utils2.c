@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:05:27 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/09/08 22:11:11 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/09 16:11:53 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ int	is_types(t_token *token, char *types)
 	if (ft_strchr(types, 'X') && is_type(token, CMD))
 		return (1);
 	else if (ft_strchr(types, 'G') && is_type(token, ARG))
+		return (1);
+	else if (ft_strchr(types, 'F') && is_type(token, FILENAME))
 		return (1);
 	else if (ft_strchr(types, 'T') && is_type(token, TRUNC))
 		return (1);

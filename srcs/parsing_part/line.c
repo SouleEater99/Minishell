@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:01:26 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/09/08 21:53:46 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/15 00:17:41 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,29 @@ char	*allocate_line(char *line)
 	return (new);
 }
 
-// static void	ext_format_line(int	i, int j, char *line, char *new)
-// {
-// }
+static void	process_separator(char *line, char *new, int *i, int *j)
+{
+	new[(*j)++] = ' ';
+	new[(*j)++] = line[(*i)++];
+	if (quotes(line, *i) == 0)
+	{
+		if (line[*i] == '>' && line[*i - 1] != '>')
+		{
+			new[(*j)++] = ' ';
+			new[(*j)++] = line[(*i)++];
+		}
+		else if (line[*i] == '<' && line[*i - 1] != '<')
+		{
+			new[(*j)++] = ' ';
+			new[(*j)++] = line[(*i)++];
+		}
+		else if (line[*i] == '>' || line[*i] == '<')
+		{
+			new[(*j)++] = line[(*i)++];
+		}
+	}
+	new[(*j)++] = ' ';
+}
 
 static void	process_char(char *line, char *new, int *i, int *j)
 {
@@ -85,13 +105,7 @@ static void	process_char(char *line, char *new, int *i, int *j)
 	}
 	else if (quotes(line, *i) == 0 && is_sep(line, *i))
 	{
-		new[(*j)++] = ' ';
-		new[(*j)++] = line[(*i)++];
-		if (quotes(line, *i) == 0 && line[*i] == '>')
-			new[(*j)++] = line[(*i)++];
-		if (quotes(line, *i) == 0 && line[*i] == '<')
-			new[(*j)++] = line[(*i)++];
-		new[(*j)++] = ' ';
+		process_separator(line, new, i, j);
 	}
 	else
 		new[(*j)++] = line[(*i)++];

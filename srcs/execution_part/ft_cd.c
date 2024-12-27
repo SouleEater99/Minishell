@@ -80,8 +80,8 @@ int	ft_cd(char **arg)
 	{
 		path = ft_expand_var("HOME");
 		if (!path)
-			return ((g_data->exit = 0), ft_putstr_fd("bash: cd: HOME not set", 2),
-				0);
+			return ((g_data->exit = 0), ft_putstr_fd("bash: cd: HOME not set",
+					2), 0);
 		if (ft_change_dir(path) == -1)
 			return (-1);
 	}

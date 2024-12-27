@@ -6,13 +6,13 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 11:13:39 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/09/06 17:38:57 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/10 10:14:11 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-int		quotes(char *line, int index)
+int	quotes(char *line, int index)
 {
 	int	i;
 	int	open;
@@ -34,53 +34,50 @@ int		quotes(char *line, int index)
 	return (open);
 }
 
-static void process_quote(char *str, int *i, int *sinqot, int *dobqot, char **newstr)
+static void	process_quote(t_quote_process *qp)
 {
-    if (str[*i] == '\'' && *dobqot == 1)
-        *sinqot *= (-1);
-    if (str[*i] == '\"' && *sinqot == 1)
-        *dobqot *= (-1);
-    if (str[*i] == '\'' && *dobqot == 1)
-        (*i)++;
-    else if (str[*i] == '\"' && *sinqot == 1)
-        (*i)++;
-    else
-    {
-        *newstr = apend_char_str(*newstr, str[*i]);
-        (*i)++;
-    }
+	if (qp->str[qp->i] == '\'' && qp->dobqot == 1)
+		qp->sinqot *= (-1);
+	if (qp->str[qp->i] == '\"' && qp->sinqot == 1)
+		qp->dobqot *= (-1);
+	if (qp->str[qp->i] == '\'' && qp->dobqot == 1)
+		qp->i++;
+	else if (qp->str[qp->i] == '\"' && qp->sinqot == 1)
+		qp->i++;
+	else
+	{
+		qp->newstr = apend_char_str(qp->newstr, qp->str[qp->i]);
+		qp->i++;
+	}
 }
 
 char	*rm_quotes(char *str)
 {
-	int		i;
-	int		sinqot;
-	int		dobqot;
-	char	*newstr;
+	t_quote_process	qp;
 
-	i = 0;
-	sinqot = 1;
-	dobqot = 1;
-	newstr = NULL;
 	if (!str)
 		return (NULL);
-	while (str[i])
+	qp.i = 0;
+	qp.sinqot = 1;
+	qp.dobqot = 1;
+	qp.newstr = NULL;
+	qp.str = str;
+	while (qp.str[qp.i])
 	{
-		process_quote(str, &i, &sinqot, &dobqot, &newstr);
+		process_quote(&qp);
 	}
-	if (newstr == NULL)
-		newstr = apend_char_str(newstr, '\0');
+	if (qp.newstr == NULL)
+		qp.newstr = apend_char_str(qp.newstr, '\0');
 	free(str);
-	return (newstr);
+	return (qp.newstr);
 }
 
 void	del_q(t_parser *parse)
 {
 	t_parser	*cur;
-	int	i;
+	int			i;
 
 	cur = parse;
-
 	expand_flag(parse);
 	while (cur)
 	{
@@ -93,9 +90,7 @@ void	del_q(t_parser *parse)
 				cur->args[i] = rm_quotes(cur->args[i]);
 				i++;
 			}
-			
 		}
 		cur = cur->next;
 	}
-	
 }

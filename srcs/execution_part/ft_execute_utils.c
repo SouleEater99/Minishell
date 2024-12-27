@@ -54,8 +54,8 @@ char	*fetch_path_of_cmd(t_env *env, char *cmd)
 	if (check_cmd_is_path(cmd) == 1)
 		return (ft_check_path(g_data->path), ft_strdup(cmd));
 	else if (check_cmd_is_path(cmd) == -1)
-		return (ft_putstr_fd(cmd, 2),
-			ft_free_all(": command not found\n", 127), NULL);
+		return (ft_putstr_fd(cmd, 2), ft_free_all(": command not found\n", 127),
+			NULL);
 	while (env && ft_strnstr(env->value, "PATH=", 6) == NULL)
 		env = env->next;
 	if (!env)
@@ -71,4 +71,14 @@ char	*fetch_path_of_cmd(t_env *env, char *cmd)
 		free(g_data->path);
 	}
 	return (NULL);
+}
+
+void	ft_get_next_pip(t_command *cmd)
+{
+	while (cmd && cmd->type != PIPE)
+	{
+		if (cmd->type == HEREDOC)
+			g_data->i_pip++;
+		cmd = cmd->next;
+	}
 }

@@ -52,6 +52,18 @@ int	ft_init_heredoc_pip(void)
 	return (g_data->n_heredoc);
 }
 
+void	ft_write_and_expand_pipe(t_command *cmd, char *line)
+{
+	if (cmd->index == -1)
+		line = expand_str(line, 0);
+	if (line)
+	{
+		write(g_data->pip[g_data->i_pip][1], line, ft_strlen(line));
+		write(g_data->pip[g_data->i_pip][1], "\n", 1);
+		free(line);
+	}
+}
+
 void	ft_write_in_pipes(t_command *cmd)
 {
 	char	*line;
@@ -63,43 +75,18 @@ void	ft_write_in_pipes(t_command *cmd)
 		if (cmd->type == HEREDOC)
 		{
 			line = readline("> ");
-			printf("########### { line : %s } ################\n", line);
 			while (line && ft_strcmp(line, cmd->args[0]) != 0)
 			{
-				if (cmd->index == -1)
-					line = expand_str(line , 0);
-				if (line)
-				{
-					write(g_data->pip[g_data->i_pip][1], line, ft_strlen(line));
-					write(g_data->pip[g_data->i_pip][1], "\n", 1);
-					free(line);
-				}
+				ft_write_and_expand_pipe(cmd, line);
 				line = readline("> ");
 			}
 			if (line)
-				free (line);
+				free(line);
 			g_data->i_pip++;
 		}
 		cmd = cmd->next;
 	}
 	ft_free_all(NULL, 0);
-}
-
-void	ft_print_pip_content(void)
-{
-	int		i;
-	char	*line;
-
-	i = 0;
-	while (i < g_data->n_heredoc)
-	{
-		line = get_next_line(g_data->pip[i][0]);
-		if (!line)
-			ft_free_all("error in get_next_line in print pip content\n", 1);
-		close(g_data->pip[i][0]);
-		close(g_data->pip[i][1]);
-		i++;
-	}
 }
 
 void	ft_heredoc(void)

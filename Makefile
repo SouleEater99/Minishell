@@ -1,6 +1,6 @@
 NAME = minishell
 CC = cc
-CFLAGS = -Wall -Wextra -Werror  -g3 #-fsanitize=address
+CFLAGS = -Wall -Wextra -Werror  -g3 -fsanitize=address
 READLINE = -lreadline
 LIBFT = ./include/lib_ft/libft.a
 SRC =	./srcs/minishell.c \
@@ -33,11 +33,20 @@ SRC =	./srcs/minishell.c \
 		./srcs/execution_part/ft_free_utils.c \
 		./srcs/execution_part/ft_heredoc.c \
 		./srcs/execution_part/ft_str_utils.c \
+		./srcs/execution_part/ft_echo.c \
+		./srcs/execution_part/ft_env_utils.c \
 		./srcs/utils/get_next_line.c \
 		./srcs/utils/get_next_line_utils.c \
 		./srcs/utils/utils.c \
 		./srcs/parsing_part/split.c \
-	
+		./srcs/parsing_part/parse_args.c \
+		./srcs/parsing_part/split_token.c \
+		./srcs/parsing_part/get_types.c \
+		./srcs/parsing_part/ambigeous.c \
+		./srcs/expension_part/heredoc.c \
+		./srcs/expension_part/emty_cmd_args.c \
+		./srcs/expension_part/expand_var.c \
+
 
 OBJ = $(SRC:.c=.o)
 

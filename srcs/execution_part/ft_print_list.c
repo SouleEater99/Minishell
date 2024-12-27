@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_print_list.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-maim <ael-maim@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 17:08:45 by ael-maim          #+#    #+#             */
-/*   Updated: 2024/08/07 17:08:47 by ael-maim         ###   ########.fr       */
+/*   Updated: 2024/09/10 09:54:58 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,19 +62,9 @@ void	print_list(t_command *table)
 void	exit_fork(int status)
 {
 	int	pid;
-	int	status1;
 
 	pid = fork();
 	if (pid == 0)
 		exit(status);
 	wait(&status);
-	printf("+++++++++++++ { before => status : %d } ++++++++++++++++\n",
-		status);
-	status1 = WEXITSTATUS(status);
-	printf("+++++++++++++ {  weexitstatus : %d } ++++++++++++++++\n", status1);
-	status1 = WIFEXITED(status);
-	printf("+++++++++++++ {  wifexed: %d } ++++++++++++++++\n", status1);
-	status1 = WIFSIGNALED(status);
-	printf("+++++++++++++ {  wifsgnaled : %d } ++++++++++++++++\n", status1);
-	printf("+++++++++++ { HEREDOC } +++++++++++++++++++++++\n");
 }

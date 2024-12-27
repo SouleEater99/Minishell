@@ -6,7 +6,7 @@
 /*   By: samsaafi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/29 08:58:19 by samsaafi          #+#    #+#             */
-/*   Updated: 2024/09/08 22:07:36 by samsaafi         ###   ########.fr       */
+/*   Updated: 2024/09/10 11:37:44 by samsaafi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,23 +117,4 @@ char	**ft_split_it(char *str)
 		vars.i = vars.j;
 	}
 	return (s);
-}
-
-void	split_token_input(t_token *token)
-{
-	t_token	*cur;
-
-	if (!token)
-		return ;
-	cur = token;
-	while (cur)
-	{
-		if (is_types(cur, "XG"))
-		{
-			cur->args = ft_split_it(cur->input);
-		}
-		else
-			cur->args = NULL;
-		cur = cur->next;
-	}
 }
